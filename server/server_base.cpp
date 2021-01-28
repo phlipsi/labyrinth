@@ -1,8 +1,11 @@
 #include "server_base.hpp"
 
+#include "handler.hpp"
+
 #include <initializer.hpp>
 
 #include <algorithm>
+#include <optional>
 #include <stdexcept>
 
 namespace labyrinth { namespace server {
@@ -43,71 +46,128 @@ server_base::server_base(uint16_t port, unsigned int max_connections)
 }
 
 server_base::~server_base() {
-    for (TCPsocket client : clients) {
-        if (client != nullptr) {
-            remove_client(client);
-        }
+    for (int i = 0; i < clients.size(); ++i) {
+        remove_client(i);
     }
     SDLNet_TCP_DelSocket(socket_set, server_socket);
     SDLNet_TCP_Close(server_socket);
     SDLNet_FreeSocketSet(socket_set);
 }
 
-void server_base::run(Handler *handler, unsigned int timeout) {
-    const int ready = SDLNet_CheckSockets(socket_set, timeout);
-    if (ready < 0) {
-        SDL_Log("Error checking sockets: %s", SDLNet_GetError());
-        throw std::runtime_error("Error checking sockets");
-    } else if (ready > 0) {
-        if (SDLNet_SocketReady(server_socket)) {
-            if (num_clients < clients.size()) {
-                TCPsocket client = SDLNet_TCP_Accept(server_socket);
+void server_base::run(handler &h, unsigned int timeout) {
+    while (running || num_clients > 0) {
+        int ready = SDLNet_CheckSockets(socket_set, timeout);
+        if (ready < 0) {
+            SDL_Log("Error checking sockets: %s", SDLNet_GetError());
+            throw std::runtime_error("Error checking sockets");
+        } else if (ready == 0) {
+            running = h.idle();
+        } else if (ready > 0) {
+            ready -= check_server_socket();
+
+            std::vector<char> data(128);
+            unsigned int i = 0;
+            while (i < clients.size() && ready > 0) {
+                TCPsocket &client = clients[i];
                 if (client != nullptr) {
-                    if (running) {
-                        add_client(client);
-                    } else {
-                        SDLNet_TCP_Close(client);
-                        SDL_Log("Can't accept more clients since server shuts down");
-                    }
-                } else {
-                    SDL_Log("Error accepting client: %s", SDLNet_GetError());
+                    ready -= check_client_socket(i, h);
                 }
-            } else {
-                SDL_Log("Can't accept more clients, already accepted %ld", clients.size());
-            }
-        }
-        std::vector<char> data(128);
-        for (int i = 0; i < clients.size(); ++i) {
-            TCPsocket &client = clients[i];
-            if (client != nullptr && SDLNet_SocketReady(client)) {
-                SDL_Log("Client %d: sent some data...", i);
-                const int received = SDLNet_TCP_Recv(client, &data[0], data.size());
-                if (received < 0) {
-                    SDL_Log("Client %d receive error: %s", i, SDLNet_GetError());
-                    throw std::runtime_error("Error receiving data");
-                } else {
-                    const std::string message(&data[0], received);
-                    if (received == 0 || message == "QUIT") {
-                        SDL_Log("Client %d disconnected: %s", i, message.c_str());
-                        remove_client(client);
-                        client = nullptr;
-                    } else {
-                        SDL_Log("Client %d: %s", i, message.c_str());
-                        if (message == "SERVER_QUIT") {
-                            SDL_Log("Client %d requests server quit", i);
-                            running = false;
-                        }
-                        if (running) {
-                            SDLNet_TCP_Send(client, "OK", 2);
-                        } else {
-                            SDLNet_TCP_Send(client, "SERVER_QUIT", 11);
-                        }
-                    }
-                }
+                ++i;
             }
         }
     }
-    //return running || num_clients > 0;
+}
+
+namespace {
+
+const char SEND_MESSAGE[] = "SEND_MESSAGE";
+const char SERVER_QUIT[] = "SERVER_QUIT";
+
+int starts_with(const char *data, size_t data_len, const char *s, size_t len_s) {
+    if (data_len >= len_s && strncmp(&data[0], s, len_s) == 0) {
+        int offset = len_s;
+        if (offset < data_len && data[offset] == '\n') {
+            ++offset;
+        }
+        return offset;
+    } else {
+        return 0;
+    }
+}
+
+std::optional<std::vector<char>> handle_data(int i, const char *data, size_t data_len, handler &h) {
+    int offset = starts_with(data, data_len, SERVER_QUIT, sizeof(SERVER_QUIT) - 1);
+    if (offset > 0) {
+        SDL_Log("Client %d: received SERVER_QUIT", i);
+        h.server_quit(i, data + offset, data_len - offset);
+        return {};
+    }
+
+    offset = starts_with(data, data_len, SEND_MESSAGE, sizeof(SEND_MESSAGE) - 1);
+    if (offset > 0) {
+        SDL_Log("Client %d: received SEND_MESSAGE", i);
+        return h.send_message(i, data + offset, data_len - offset);
+    }
+
+    SDL_Log("Client %d: received unknown message", i);
+    return std::vector<char>();
+}
+
+}
+
+int server_base::check_client_socket(unsigned int i, handler &h) {
+    TCPsocket &client = clients[i];
+    if (SDLNet_SocketReady(client)) {
+        SDL_Log("Client %d: sent some data...", i);
+        std::vector<char> data(128, 0);
+        const int received = SDLNet_TCP_Recv(client, &data[0], data.size());
+        if (received < 0) {
+            SDL_Log("Client %d receive error: %s", i, SDLNet_GetError());
+            throw std::runtime_error("Error receiving data");
+        } else {
+            // TODO: received == 0 abhandeln
+            SDL_Log("Client %d: received %d bytes", i, received);
+            if (running) {
+                const std::optional<std::vector<char>> response = handle_data(i, &data[0], received, h);
+                if (response) {
+                    const std::vector<char> &output = *response;
+                    SDLNet_TCP_Send(client, &output[0], output.size());
+                    return 1;
+                }
+            }
+            // TODO: SERVER_QUIT response vereinheitlichen
+            SDL_Log("Client %d disconnected", i);
+            SDLNet_TCP_Send(client, SERVER_QUIT, sizeof(SERVER_QUIT) - 1);
+            remove_client(i);
+            running = false;
+        }
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+int server_base::check_server_socket() {
+    if (SDLNet_SocketReady(server_socket)) {
+        if (num_clients < clients.size()) {
+            TCPsocket client = SDLNet_TCP_Accept(server_socket);
+            if (client != nullptr) {
+                if (running) {
+                    add_client(client);
+                } else {
+                    SDLNet_TCP_Close(client);
+                    SDL_Log("Can't accept more clients since server shuts down");
+                }
+            } else {
+                SDL_Log("Error accepting client: %s", SDLNet_GetError());
+            }
+        } else {
+            SDL_Log("Can't accept more clients, already accepted %ld", clients.size());
+        }
+        return 1;
+    } else {
+        return 0;
+    }
 }
 
 void server_base::add_client(TCPsocket client) {
@@ -127,10 +187,14 @@ void server_base::add_client(TCPsocket client) {
     }
 }
 
-void server_base::remove_client(TCPsocket client) {
-    SDLNet_TCP_DelSocket(socket_set, client);
-    SDLNet_TCP_Close(client);
-    --num_clients;
+void server_base::remove_client(int i) {
+    TCPsocket &client = clients[i];
+    if (client != nullptr) {
+        SDLNet_TCP_DelSocket(socket_set, client);
+        SDLNet_TCP_Close(client);
+        client = nullptr;
+        --num_clients;
+    }
 }
 
 } }

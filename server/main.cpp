@@ -1,11 +1,32 @@
+#include "handler.hpp"
 #include "server_base.hpp"
 
 #include <initializer.hpp>
 
+#include <iostream>
+
+class test_handler : public labyrinth::server::handler {
+public:
+    virtual bool idle() override {
+        std::cout << "idle" << std::endl;
+        return true;
+    }
+
+    virtual void server_quit(int i, const char *data, size_t data_len) override {
+        std::cout << "server_quit: " << std::string(data, data_len) << std::endl;
+    }
+
+    virtual std::vector<char> send_message(int i, const char *data, size_t data_len) override {
+        std::cout << "send_message: " << std::string(data, data_len) << std::endl;
+        return { 'O', 'K' };
+    }
+};
+
 int main(int argc, char *argv[]) {
     labyrinth::common::initializer init(0);
     labyrinth::server::server_base s(10000, 10);
-    s.run(nullptr, 1000);
+    test_handler h;
+    s.run(h, 1000);
     return 0;
 /*
     IPaddress addr;

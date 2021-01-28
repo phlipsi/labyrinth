@@ -7,14 +7,14 @@
 
 namespace labyrinth { namespace server {
 
-class Handler;
+class handler;
 
 class server_base {
 public:
     server_base(uint16_t port, unsigned int max_connections);
     ~server_base();
 
-    void run(Handler *handler, unsigned int timeout);
+    void run(handler &h, unsigned int timeout);
 
 private:
     SDLNet_SocketSet socket_set;
@@ -23,8 +23,10 @@ private:
     bool running;
     TCPsocket server_socket;
 
+    int check_server_socket();
+    int check_client_socket(unsigned int i, handler &h);
     void add_client(TCPsocket client);
-    void remove_client(TCPsocket client);
+    void remove_client(int i);
 };
 
 
