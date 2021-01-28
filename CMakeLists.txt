@@ -10,3 +10,4 @@ pkg_check_modules(SDL2_net REQUIRED IMPORTED_TARGET SDL2_net)
 
 add_subdirectory(common)
 add_subdirectory(server)
+add_subdirectory(client)

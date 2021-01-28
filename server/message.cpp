@@ -7,6 +7,10 @@ namespace labyrinth { namespace server {
 namespace {
 
 const char UNKNOWN[]      = "UNKNOWN";
+const char OK[]           = "OK";
+const char CLIENT_HELLO[] = "CLIENT_HELLO";
+const char PUSH_UPDATE[]  = "PUSH_UPDATE";
+const char GET_STATE[]    = "GET_STATE";
 const char SEND_MESSAGE[] = "SEND_MESSAGE";
 const char SERVER_QUIT[]  = "SERVER_QUIT";
 const char CLIENT_QUIT[]  = "CLIENT_QUIT";
@@ -38,6 +42,34 @@ message::message(const char *data, size_t data_len)
     }
 
     if (t == type::UNKNOWN) {
+        offset = parse_command(data, data_len, OK, sizeof(OK) - 1);
+        if (offset > 0) {
+            t = type::OK;
+        }
+    }
+
+    if (t == type::UNKNOWN) {
+        offset = parse_command(data, data_len, CLIENT_HELLO, sizeof(CLIENT_HELLO) - 1);
+        if (offset > 0) {
+            t = type::CLIENT_HELLO;
+        }
+    }
+
+    if (t == type::UNKNOWN) {
+        offset = parse_command(data, data_len, PUSH_UPDATE, sizeof(PUSH_UPDATE) - 1);
+        if (offset > 0) {
+            t = type::PUSH_UPDATE;
+        }
+    }
+
+    if (t == type::UNKNOWN) {
+        offset = parse_command(data, data_len, GET_STATE, sizeof(GET_STATE) - 1);
+        if (offset > 0) {
+            t = type::GET_STATE;
+        }
+    }
+
+    if (t == type::UNKNOWN) {
         offset = parse_command(data, data_len, SERVER_QUIT, sizeof(SERVER_QUIT) - 1);
         if (offset > 0) {
             t = type::SERVER_QUIT;
@@ -65,6 +97,14 @@ const char *message::get_type_name(type t) {
     switch (t) {
     case type::UNKNOWN:
         return UNKNOWN;
+    case type::OK:
+        return OK;
+    case type::CLIENT_HELLO:
+        return CLIENT_HELLO;
+    case type::PUSH_UPDATE:
+        return PUSH_UPDATE;
+    case type::GET_STATE:
+        return GET_STATE;
     case type::SEND_MESSAGE:
         return SEND_MESSAGE;
     case type::SERVER_QUIT:
@@ -80,6 +120,14 @@ size_t message::get_type_name_len(type t) {
     switch (t) {
     case type::UNKNOWN:
         return sizeof(UNKNOWN) - 1;
+    case type::OK:
+        return sizeof(OK) - 1;
+    case type::CLIENT_HELLO:
+        return sizeof(CLIENT_HELLO) - 1;
+    case type::PUSH_UPDATE:
+        return sizeof(PUSH_UPDATE) - 1;
+    case type::GET_STATE:
+        return sizeof(GET_STATE) - 1;
     case type::SEND_MESSAGE:
         return sizeof(SEND_MESSAGE) - 1;
     case type::SERVER_QUIT:

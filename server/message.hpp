@@ -12,6 +12,10 @@ public:
     enum class type {
         ERROR = -1,
         UNKNOWN = 0,
+        OK,
+        CLIENT_HELLO,
+        PUSH_UPDATE,
+        GET_STATE,
         SEND_MESSAGE,
         SERVER_QUIT,
         CLIENT_QUIT

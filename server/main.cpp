@@ -5,26 +5,44 @@
 #include <initializer.hpp>
 
 #include <iostream>
+#include <deque>
+#include <map>
+#include <string>
 
 class test_handler : public labyrinth::server::handler {
 public:
-    virtual bool idle() override {
-        return true;
-    }
+    test_handler() : s(0) { }
 
-    virtual void server_quit(int i, const labyrinth::server::message &received) override {
-        std::cout << "server_quit: " << std::string(received.get_payload().data(), received.get_payload().size()) << std::endl;
+    virtual void client_hello(int i, const labyrinth::server::message &received) override {
+        const std::string name(received.get_payload().data(), received.get_payload().size());
+        players.emplace(i, name);
+        std::cout << "new player: " << name << std::endl;
     }
 
     virtual void client_quit(int i, const labyrinth::server::message &received) override {
-        std::cout << "client_quit: " << std::string(received.get_payload().data(), received.get_payload().size()) << std::endl;
+        const auto it = players.find(i);
+        std::cout << "player quits: " << it->second << std::endl;
+        players.erase(it);
     }
 
-    virtual labyrinth::server::message send_message(int i, const labyrinth::server::message &received) override {
-        std::cout << "send_message: " << std::string(received.get_payload().data(), received.get_payload().size()) << std::endl;
-        return labyrinth::server::message(labyrinth::server::message::type::SEND_MESSAGE, "OK", 2);
+    virtual labyrinth::server::message push_update(int i, const labyrinth::server::message &received) override {
+        const std::vector<char> &payload = received.get_payload();
+        int update = SDLNet_Read32(payload.data());
+        s += update;
+        std::vector<char> response(sizeof(int32_t));
+        SDLNet_Write32(s, response.data());
+        return labyrinth::server::message(labyrinth::server::message::type::GET_STATE, response.data(), response.size());
     }
 
+    virtual labyrinth::server::message get_state(int i, const labyrinth::server::message &received) override {
+        std::vector<char> response(sizeof(int32_t));
+        SDLNet_Write32(s, response.data());
+        return labyrinth::server::message(labyrinth::server::message::type::GET_STATE, response.data(), response.size());
+    }
+
+private:
+    std::map<int, std::string> players;
+    int s;
 };
 
 int main(int argc, char *argv[]) {

@@ -93,6 +93,26 @@ int server_base::check_client_socket(unsigned int i, handler &h) {
             case message::type::ERROR:
                 SDL_Log("Client %d: error receiving data: %s", i, SDLNet_GetError());
                 throw std::runtime_error("Error receiving data");
+            case message::type::OK:
+                SDL_Log("Client %d: Got OK", i);
+                h.ok(i, received);
+                SDL_Log("Client %d: Return OK", i);
+                message(message::type::OK).send(client);
+                return 1;
+            case message::type::CLIENT_HELLO:
+                SDL_Log("Client %d: Got CLIENT_OK", i);
+                h.client_hello(i, received);
+                SDL_Log("Client %d: Return OK", i);
+                message(message::type::OK).send(client);
+                return 1;
+            case message::type::PUSH_UPDATE:
+                SDL_Log("Client %d: Got PUSH_UPDATE", i);
+                h.push_update(i, received).send(client);
+                return 1;
+            case message::type::GET_STATE:
+                SDL_Log("Client %d: Got GET_STATE", i);
+                h.get_state(i, received).send(client);
+                return 1;
             case message::type::SEND_MESSAGE: {
                 SDL_Log("Client %d: Got SEND_MESSAGE", i);
                 const message answer = h.send_message(i, received);
