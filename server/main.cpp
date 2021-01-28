@@ -1,4 +1,5 @@
 #include "handler.hpp"
+#include "message.hpp"
 #include "server_base.hpp"
 
 #include <initializer.hpp>
@@ -8,18 +9,22 @@
 class test_handler : public labyrinth::server::handler {
 public:
     virtual bool idle() override {
-        std::cout << "idle" << std::endl;
         return true;
     }
 
-    virtual void server_quit(int i, const char *data, size_t data_len) override {
-        std::cout << "server_quit: " << std::string(data, data_len) << std::endl;
+    virtual void server_quit(int i, const labyrinth::server::message &received) override {
+        std::cout << "server_quit: " << std::string(received.get_payload().data(), received.get_payload().size()) << std::endl;
     }
 
-    virtual std::vector<char> send_message(int i, const char *data, size_t data_len) override {
-        std::cout << "send_message: " << std::string(data, data_len) << std::endl;
-        return { 'O', 'K' };
+    virtual void client_quit(int i, const labyrinth::server::message &received) override {
+        std::cout << "client_quit: " << std::string(received.get_payload().data(), received.get_payload().size()) << std::endl;
     }
+
+    virtual labyrinth::server::message send_message(int i, const labyrinth::server::message &received) override {
+        std::cout << "send_message: " << std::string(received.get_payload().data(), received.get_payload().size()) << std::endl;
+        return labyrinth::server::message(labyrinth::server::message::type::SEND_MESSAGE, "OK", 2);
+    }
+
 };
 
 int main(int argc, char *argv[]) {

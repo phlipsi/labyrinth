@@ -1,6 +1,7 @@
 #include "server_base.hpp"
 
 #include "handler.hpp"
+#include "message.hpp"
 
 #include <initializer.hpp>
 
@@ -55,13 +56,16 @@ server_base::~server_base() {
 }
 
 void server_base::run(handler &h, unsigned int timeout) {
+    SDL_Log("Server: Let's serve!");
     while (running || num_clients > 0) {
         int ready = SDLNet_CheckSockets(socket_set, timeout);
         if (ready < 0) {
             SDL_Log("Error checking sockets: %s", SDLNet_GetError());
             throw std::runtime_error("Error checking sockets");
         } else if (ready == 0) {
-            running = h.idle();
+            if (!h.idle()) {
+                running = false;
+            }
         } else if (ready > 0) {
             ready -= check_server_socket();
 
@@ -76,75 +80,107 @@ void server_base::run(handler &h, unsigned int timeout) {
             }
         }
     }
-}
-
-namespace {
-
-const char SEND_MESSAGE[] = "SEND_MESSAGE";
-const char SERVER_QUIT[] = "SERVER_QUIT";
-
-int starts_with(const char *data, size_t data_len, const char *s, size_t len_s) {
-    if (data_len >= len_s && strncmp(&data[0], s, len_s) == 0) {
-        int offset = len_s;
-        if (offset < data_len && data[offset] == '\n') {
-            ++offset;
-        }
-        return offset;
-    } else {
-        return 0;
-    }
-}
-
-std::optional<std::vector<char>> handle_data(int i, const char *data, size_t data_len, handler &h) {
-    int offset = starts_with(data, data_len, SERVER_QUIT, sizeof(SERVER_QUIT) - 1);
-    if (offset > 0) {
-        SDL_Log("Client %d: received SERVER_QUIT", i);
-        h.server_quit(i, data + offset, data_len - offset);
-        return {};
-    }
-
-    offset = starts_with(data, data_len, SEND_MESSAGE, sizeof(SEND_MESSAGE) - 1);
-    if (offset > 0) {
-        SDL_Log("Client %d: received SEND_MESSAGE", i);
-        return h.send_message(i, data + offset, data_len - offset);
-    }
-
-    SDL_Log("Client %d: received unknown message", i);
-    return std::vector<char>();
-}
-
+    SDL_Log("Server: Goodbye!");
 }
 
 int server_base::check_client_socket(unsigned int i, handler &h) {
     TCPsocket &client = clients[i];
     if (SDLNet_SocketReady(client)) {
         SDL_Log("Client %d: sent some data...", i);
-        std::vector<char> data(128, 0);
-        const int received = SDLNet_TCP_Recv(client, &data[0], data.size());
-        if (received < 0) {
-            SDL_Log("Client %d receive error: %s", i, SDLNet_GetError());
-            throw std::runtime_error("Error receiving data");
-        } else {
-            // TODO: received == 0 abhandeln
-            SDL_Log("Client %d: received %d bytes", i, received);
-            if (running) {
-                const std::optional<std::vector<char>> response = handle_data(i, &data[0], received, h);
-                if (response) {
-                    const std::vector<char> &output = *response;
-                    SDLNet_TCP_Send(client, &output[0], output.size());
-                    return 1;
-                }
+        const message received = receive(client);
+        if (running) {
+            switch (received.get_type()) {
+            case message::type::ERROR:
+                SDL_Log("Client %d: error receiving data: %s", i, SDLNet_GetError());
+                throw std::runtime_error("Error receiving data");
+            case message::type::SEND_MESSAGE: {
+                SDL_Log("Client %d: Got SEND_MESSAGE", i);
+                const message answer = h.send_message(i, received);
+                SDL_Log("Client %d: Return %lu bytes", i, answer.get_payload().size());
+                answer.send(client);
+                return 1;
             }
-            // TODO: SERVER_QUIT response vereinheitlichen
-            SDL_Log("Client %d disconnected", i);
-            SDLNet_TCP_Send(client, SERVER_QUIT, sizeof(SERVER_QUIT) - 1);
+            case message::type::CLIENT_QUIT:
+                SDL_Log("Client %d: Got CLIENT_QUIT", i);
+                h.client_quit(i, received);
+                SDL_Log("Client %d: Return CLIENT_QUIT", i);
+                received.send(client);
+                remove_client(i);
+                return 1;
+            case message::type::SERVER_QUIT:
+                SDL_Log("Client %d: Got SERVER_QUIT", i);
+                h.server_quit(i, received);
+                SDL_Log("Client %d: Return CLIENT_QUIT", i);
+                message(message::type::CLIENT_QUIT).send(client);
+                remove_client(i);
+                running = false;
+                return 1;
+            case message::type::UNKNOWN:
+            default:
+                SDL_Log("Client %d: unknown command", i);
+                message(message::type::UNKNOWN).send(client);
+                return 1;
+            }
+        } else {
+            h.client_quit(i, received);
+            SDL_Log("Client %d: send CLIENT_QUIT since server shuts down", i);
+            message(message::type::CLIENT_QUIT).send(client);
             remove_client(i);
-            running = false;
+            return 1;
         }
-        return 1;
     } else {
         return 0;
     }
+/*        std::vector<char> data(128, 0);
+        const int received = SDLNet_TCP_Recv(client, &data[0], data.size());
+        if (received < 0) {
+            SDL_Log("Client %d: error receiving data: %s", i, SDLNet_GetError());
+            throw std::runtime_error("Error receiving data");
+        } else if (received > 0) {
+            SDL_Log("Client %d: received %d bytes", i, received);
+            if (running) {
+                const message m(&data[0], received);
+                switch (m.get_type()) {
+                case message::type::SEND_MESSAGE: {
+                    SDL_Log("Client %d: Got SEND_MESSAGE", i);
+                    const std::vector<char> answer = h->send_message(i, m.get_payload(), m.get_payload_len());
+                    SDL_Log("Client %d: Return %lu bytes", i, answer.size());
+                    SDLNet_TCP_Send(client, &answer[0], answer.size());
+                    break;
+                }
+                case message::type::SERVER_QUIT:
+                    SDL_Log("Client %d: Got SERVER_QUIT", i);
+                    h->server_quit(client, m.get_payload(), m.get_payload_len());
+                    SDL_Log("Client %d: Return CLIENT_QUIT", i);
+                    SDLNet_TCP_Send(client,
+                                    message::get_type_name(message::type::CLIENT_QUIT),
+                                    message::get_type_name_len(message::type::CLIENT_QUIT));
+                    remove_client(i);
+                    running = false;
+                    break;
+                case message::type::CLIENT_QUIT:
+                    SDL_Log("Client %d: Got CLIENT_QUIT", i);
+                    h->client_quit(client, m.get_payload(), m.get_payload_len());
+                    SDL_Log("Client %d: Return CLIENT_QUIT", i);
+                    SDLNet_TCP_Send(client,
+                                    message::get_type_name(message::type::CLIENT_QUIT),
+                                    message::get_type_name_len(message::type::CLIENT_QUIT));
+                    remove_client(i);
+                    break;
+                }
+            } else {
+                SDL_Log("Client %d: client quit since server shuts down", i);
+                SDLNet_TCP_Send(client, CLIENT_QUIT, sizeof(CLIENT_QUIT) - 1);
+            }
+        } else {
+            handle_data(i, CLIENT_QUIT, sizeof(CLIENT_QUIT) - 1
+        SDL_Log("Client %d disconnected", i);
+        SDLNet_TCP_Send(client, SERVER_QUIT, sizeof(SERVER_QUIT) - 1);
+        remove_client(i);
+        return 1;
+    } else {
+        return 0;
+    }*/
 }
 
 int server_base::check_server_socket() {

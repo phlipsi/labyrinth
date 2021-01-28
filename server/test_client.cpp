@@ -31,10 +31,13 @@ int main() {
     }
 
     std::vector<char> buffer(128);
-    std::string input;
+    std::string command;
+    std::string payload;
     std::string output;
-    while (input != "QUIT" && output != "SERVER_QUIT") {
-        std::cin >> input;
+    do {
+        getline(std::cin, command);
+        getline(std::cin, payload);
+        std::string input = command + '\n' + payload;
         const int sent = SDLNet_TCP_Send(server, input.c_str(), input.length());
         if (sent < input.length()) {
             SDL_Log("SDLNet_TCP_Send: %s\n", SDLNet_GetError());
@@ -44,6 +47,6 @@ int main() {
         const int received = SDLNet_TCP_Recv(server, &buffer[0], buffer.size());
         output.assign(&buffer[0], received);
         std::cout << output << std::endl;
-    }
+    } while (output.compare(0, 11, "CLIENT_QUIT") != 0);
     SDLNet_TCP_Close(server);
 }

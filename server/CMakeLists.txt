@@ -1,4 +1,4 @@
-add_executable(server main.cpp server_base.cpp)
+add_executable(server main.cpp message.cpp server_base.cpp)
 target_link_libraries(server PRIVATE common)
 target_link_libraries(server PRIVATE PkgConfig::SDL2_net)
 
