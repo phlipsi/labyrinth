@@ -1,5 +1,10 @@
 #pragma once
 
+#include <message.hpp>
+
+#include <string_view>
+#include <vector>
+
 namespace labyrinth { namespace common {
 
 class message;
@@ -8,17 +13,22 @@ class handler {
 public:
     virtual ~handler() = default;
 
-    virtual bool idle();
-    virtual void ok(int i, const message &received);
+    message dispatch(int client_id, const message &received);
 
-    virtual void client_hello(int i, const message &received);
-    virtual void client_quit(int i, const message &received);
+    virtual bool on_idle();
 
-    virtual message push_update(int i, const message &received);
-    virtual message get_state(int i, const message &received);
+    virtual void on_ok(int client_id);
+    virtual void on_error(int client_id, std::string_view text);
+    virtual std::vector<char> on_unknown(int client_id, const std::vector<char> &payload);
 
-    virtual void server_quit(int i, const message &received);
-    virtual message send_message(int i, const message &received);
+    virtual bool on_client_hello(int client_id, std::string_view name);
+    virtual void on_client_quit(int client_id);
+
+    virtual std::vector<char> on_push_update(int client_id, const std::vector<char> &payload);
+    virtual std::vector<char> on_get_state(int client_id);
+
+    virtual void on_server_quit(int client_id);
+    virtual void on_send_message(int client_id, std::string_view recipient, std::string_view text);
 };
 
 } }

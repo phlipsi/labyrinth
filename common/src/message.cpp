@@ -1,6 +1,7 @@
 #include "message.hpp"
 
 #include <cstring>
+#include <string_view>
 
 namespace labyrinth { namespace common {
 
@@ -15,140 +16,77 @@ const char SEND_MESSAGE[] = "SEND_MESSAGE";
 const char SERVER_QUIT[]  = "SERVER_QUIT";
 const char CLIENT_QUIT[]  = "CLIENT_QUIT";
 
-int parse_command(const char *data,
-                  size_t data_len,
-                  const char *command,
-                  size_t command_len)
-{
-    if (data_len >= command_len && strncmp(&data[0], command, command_len) == 0) {
-        int offset = command_len;
-        if (offset < data_len && data[offset] == '\n') {
-            ++offset;
-        }
-        return offset;
+message::type translate_command_to_type(const char *command, size_t command_len) {
+    if (strncmp(command, OK, command_len) == 0) {
+        return message::type::OK;
+    } else if (strncmp(command, CLIENT_HELLO, command_len) == 0) {
+        return message::type::CLIENT_HELLO;
+    } else if (strncmp(command, CLIENT_QUIT, command_len) == 0) {
+        return message::type::CLIENT_QUIT;
+    } else if (strncmp(command, PUSH_UPDATE, command_len) == 0) {
+        return message::type::PUSH_UPDATE;
+    } else if (strncmp(command, GET_STATE, command_len) == 0) {
+        return message::type::GET_STATE;
+    } else if (strncmp(command, SEND_MESSAGE, command_len) == 0) {
+        return message::type::SEND_MESSAGE;
+    } else if (strncmp(command, SERVER_QUIT, command_len) == 0) {
+        return message::type::SERVER_QUIT;
     } else {
-        return 0;
+        return message::type::UNKNOWN;
+    }
+}
+
+std::string_view translate_type_to_command(message::type t) {
+    switch (t) {
+    case message::type::OK:
+        return std::string_view(OK, sizeof(OK) - 1);
+    case message::type::CLIENT_HELLO:
+        return std::string_view(CLIENT_HELLO, sizeof(CLIENT_HELLO) - 1);
+    case message::type::CLIENT_QUIT:
+        return std::string_view(CLIENT_QUIT, sizeof(CLIENT_QUIT) - 1);
+    case message::type::PUSH_UPDATE:
+        return std::string_view(PUSH_UPDATE, sizeof(PUSH_UPDATE) - 1);
+    case message::type::GET_STATE:
+        return std::string_view(GET_STATE, sizeof(GET_STATE) - 1);
+    case message::type::SEND_MESSAGE:
+        return std::string_view(SEND_MESSAGE, sizeof(SEND_MESSAGE) - 1);
+    case message::type::SERVER_QUIT:
+        return std::string_view(SERVER_QUIT, sizeof(SERVER_QUIT) - 1);
+    default:
+        return std::string_view(UNKNOWN, sizeof(UNKNOWN) - 1);
     }
 }
 
 }
 
-message::message(const char *data, size_t data_len)
-  : t(type::UNKNOWN)
-{
-    int offset = parse_command(data, data_len, SEND_MESSAGE, sizeof(SEND_MESSAGE) - 1);
-    if (offset > 0) {
-        t = type::SEND_MESSAGE;
-    }
-
-    if (t == type::UNKNOWN) {
-        offset = parse_command(data, data_len, OK, sizeof(OK) - 1);
-        if (offset > 0) {
-            t = type::OK;
-        }
-    }
-
-    if (t == type::UNKNOWN) {
-        offset = parse_command(data, data_len, CLIENT_HELLO, sizeof(CLIENT_HELLO) - 1);
-        if (offset > 0) {
-            t = type::CLIENT_HELLO;
-        }
-    }
-
-    if (t == type::UNKNOWN) {
-        offset = parse_command(data, data_len, PUSH_UPDATE, sizeof(PUSH_UPDATE) - 1);
-        if (offset > 0) {
-            t = type::PUSH_UPDATE;
-        }
-    }
-
-    if (t == type::UNKNOWN) {
-        offset = parse_command(data, data_len, GET_STATE, sizeof(GET_STATE) - 1);
-        if (offset > 0) {
-            t = type::GET_STATE;
-        }
-    }
-
-    if (t == type::UNKNOWN) {
-        offset = parse_command(data, data_len, SERVER_QUIT, sizeof(SERVER_QUIT) - 1);
-        if (offset > 0) {
-            t = type::SERVER_QUIT;
-        }
-    }
-
-    if (t == type::UNKNOWN) {
-        offset = parse_command(data, data_len, CLIENT_QUIT, sizeof(CLIENT_QUIT) - 1);
-        if (offset > 0) {
-            t = type::CLIENT_QUIT;
-        }
-    }
-
-    if (t != type::UNKNOWN) {
-        payload.assign(data + offset, data + data_len - offset);
-    }
-}
+message::message(type t, std::vector<char> &&payload)
+  : t(t),
+    payload(std::move(payload))
+{ }
 
 message::message(type t, const char *payload, size_t payload_len)
   : t(t),
     payload(payload, payload + payload_len)
 { }
 
-const char *message::get_type_name(type t) {
-    switch (t) {
-    case type::UNKNOWN:
-        return UNKNOWN;
-    case type::OK:
-        return OK;
-    case type::CLIENT_HELLO:
-        return CLIENT_HELLO;
-    case type::PUSH_UPDATE:
-        return PUSH_UPDATE;
-    case type::GET_STATE:
-        return GET_STATE;
-    case type::SEND_MESSAGE:
-        return SEND_MESSAGE;
-    case type::SERVER_QUIT:
-        return SERVER_QUIT;
-    case type::CLIENT_QUIT:
-        return CLIENT_QUIT;
-    default:
-        return nullptr;
-    }
-}
+message::message(type t, const char *payload)
+  : t(t),
+    payload(payload, payload + strlen(payload))
+{ }
 
-size_t message::get_type_name_len(type t) {
-    switch (t) {
-    case type::UNKNOWN:
-        return sizeof(UNKNOWN) - 1;
-    case type::OK:
-        return sizeof(OK) - 1;
-    case type::CLIENT_HELLO:
-        return sizeof(CLIENT_HELLO) - 1;
-    case type::PUSH_UPDATE:
-        return sizeof(PUSH_UPDATE) - 1;
-    case type::GET_STATE:
-        return sizeof(GET_STATE) - 1;
-    case type::SEND_MESSAGE:
-        return sizeof(SEND_MESSAGE) - 1;
-    case type::SERVER_QUIT:
-        return sizeof(SERVER_QUIT) - 1;
-    case type::CLIENT_QUIT:
-        return sizeof(CLIENT_QUIT) - 1;
-    default:
-        return 0;
-    }
-}
+message::message(type t)
+  : t(t)
+{ }
 
 void send(TCPsocket destination, const message &m) {
     const message::type t = m.get_type();
-    const char *const type_name = message::get_type_name(t);
-    const size_t type_name_len = message::get_type_name_len(t);
+    const std::string_view command = translate_type_to_command(t);
 
     const std::vector<char> &payload = m.get_payload();
     std::vector<char> buffer;
-    buffer.reserve(type_name_len + 1 + payload.size());
+    buffer.reserve(command.length() + 1 + payload.size());
 
-    buffer.insert(buffer.end(), type_name, type_name + type_name_len);
+    buffer.insert(buffer.end(), command.begin(), command.end());
     if (!payload.empty()) {
         buffer.push_back('\n');
         buffer.insert(buffer.end(), payload.begin(), payload.end());
@@ -160,11 +98,26 @@ message receive(TCPsocket source) {
     std::vector<char> buffer(128);
     const int received = SDLNet_TCP_Recv(source, buffer.data(), buffer.size());
     if (received < 0) {
-        return message(message::type::ERROR);
+        const char *const error = SDLNet_GetError();
+        return message(message::type::ERROR, error, strlen(error));
     } else if (received == 0) {
         return message(message::type::CLIENT_QUIT);
     } else {
-        return message(buffer.data(), buffer.size());
+        const char *command = buffer.data();
+        const char *sep = static_cast<const char *>(memchr(buffer.data(), '\n', received));
+        size_t command_len = 0;
+        const char *payload = nullptr;
+        size_t payload_len = 0;
+        if (sep != nullptr) {
+            command_len = sep - command;
+            payload = sep + 1;
+            payload_len = received - command_len - 1;
+        } else {
+            command_len = received;
+            payload = "";
+            payload_len = 0;
+        }
+        return message(translate_command_to_type(command, command_len), payload, payload_len);
     }
 }
 

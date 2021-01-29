@@ -1,6 +1,7 @@
 #include <initializer.hpp>
 
 #include <SDL2/SDL_net.h>
+#include <message.hpp>
 
 #include <iostream>
 #include <string>
@@ -29,39 +30,35 @@ public:
         server(open_socket()),
         s(0)
     {
-        send("CLIENT_HELLO\n" + name);
+        labyrinth::common::send(server, labyrinth::common::message(labyrinth::common::message::type::CLIENT_HELLO, "philipp"));
+        labyrinth::common::receive(server);
         s = get_state();
     }
 
     ~client() {
-        send("CLIENT_QUIT");
+        labyrinth::common::send(server, labyrinth::common::message(labyrinth::common::message::type::CLIENT_QUIT));
+        labyrinth::common::receive(server);
         SDLNet_TCP_Close(server);
     }
 
     int push_update(int u) {
-        std::string update(sizeof(Uint32), ' ');
+        std::vector<char> update(sizeof(Uint32));
         SDLNet_Write32(u, update.data());
-        const std::vector<char> new_state = send("PUSH_UPDATE\n" + update);
-        s = SDLNet_Read32(new_state.data() + sizeof("GET_STATE"));
+        labyrinth::common::send(server, labyrinth::common::message(labyrinth::common::message::type::PUSH_UPDATE, std::move(update)));
+        const labyrinth::common::message response = labyrinth::common::receive(server);
+        if (response.get_type() == labyrinth::common::message::type::GET_STATE) {
+            s = SDLNet_Read32(response.get_payload().data());
+        }
         return s;
     }
 
     int get_state() {
-        const std::vector<char> new_state = send("GET_STATE");
-        s = SDLNet_Read32(new_state.data() + sizeof("GET_STATE"));
-        return s;
-    }
-
-    std::vector<char> send(const std::string_view &input) {
-        const int sent = SDLNet_TCP_Send(server, input.data(), input.size());
-        if (sent < input.size()) {
-            SDL_Log("Client: Error sending: %s", SDLNet_GetError());
-            throw std::runtime_error("Error sending");
+        labyrinth::common::send(server, labyrinth::common::message(labyrinth::common::message::type::GET_STATE));
+        const labyrinth::common::message response = labyrinth::common::receive(server);
+        if (response.get_type() == labyrinth::common::message::type::GET_STATE) {
+            s = SDLNet_Read32(response.get_payload().data());
         }
-        std::vector<char> output(128);
-        const int received = SDLNet_TCP_Recv(server, output.data(), output.size());
-        output.resize(received);
-        return output;
+        return s;
     }
 
 private:
