@@ -27,19 +27,103 @@ std::vector<unsigned int> read_vector(const char *&buffer, const char *end, unsi
     return result;
 }
 
+void write(unsigned int value, char *&buffer, const char *end) {
+    if (buffer + sizeof(Uint32) <= end) {
+        SDLNet_Write32(value, buffer);
+        buffer += sizeof(Uint32);
+    } else {
+        throw std::runtime_error("Not enough data in buffer");
+    }
 }
 
-state::state(const char *buffer, size_t max)
-  : width(read(buffer, buffer + max)),
-    height(read(buffer, buffer + max)),
-    depth(read(buffer, buffer + max)),
-    tiles(read_vector(buffer, buffer + max, width * height * depth)),
-    x(read(buffer, buffer + max)),
-    y(read(buffer, buffer + max)),
-    z(read(buffer, buffer + max)),
-    goal_x(read(buffer, buffer + max)),
-    goal_y(read(buffer, buffer + max)),
-    goal_z(read(buffer, buffer + max))
+void write_vector(const std::vector<unsigned int> &values, char *&buffer, const char *end) {
+    for (unsigned int value : values) {
+        write(value, buffer, end);
+    }
+}
+
+}
+
+state::state()
+  : width(0),
+    height(0),
+    depth(0),
+    x(0),
+    y(0),
+    z(0),
+    goal_x(0),
+    goal_y(0),
+    goal_z(0)
 { }
+
+state::state(unsigned int width,
+             unsigned int height,
+             unsigned int depth,
+             std::vector<unsigned int> tiles,
+             unsigned int x,
+             unsigned int y,
+             unsigned int z,
+             unsigned int goal_x,
+             unsigned int goal_y,
+             unsigned int goal_z)
+  : width(width),
+    height(height),
+    depth(depth),
+    tiles(std::move(tiles)),
+    x(x),
+    y(y),
+    z(z),
+    goal_x(goal_x),
+    goal_y(goal_y),
+    goal_z(goal_z)
+{ }
+
+void state::read_from(const std::vector<char> &payload) {
+    const char *it = payload.data();
+    const char *const end = payload.data() + payload.size();
+    width = read(it, end);
+    height = read(it, end);
+    depth = read(it, end);
+    tiles = read_vector(it, end, width * height *depth);
+    x = read(it, end);
+    y = read(it, end);
+    z = read(it, end);
+    goal_x = read(it, end);
+    goal_y = read(it, end);
+    goal_z = read(it, end);
+}
+
+std::vector<char> state::write_to() const {
+    std::vector<char> result(sizeof(Uint32) * (9 + width * height * depth));
+    char *it = result.data();
+    const char *const end = result.data() + result.size();
+    write(width, it, end);
+    write(height, it, end);
+    write(depth, it, end);
+    write_vector(tiles, it, end);
+    write(x, it, end);
+    write(y, it, end);
+    write(z, it, end);
+    write(goal_x, it, end);
+    write(goal_y, it, end);
+    write(goal_z, it, end);
+    return result;
+}
+
+// 076543210
+//    hvoulr
+
+state get_level(int level) {
+    if (level == 0) {
+        return state(2, 2, 2, { 0b111110, 0b011101,
+                                0b111110, 0b011101,
+                                0b111010, 0b101101,
+                                0b110110, 0b101101 },
+                     0, 0, 0,
+                     1, 0, 0);
+    } else {
+        throw std::runtime_error("Invalid level");
+    }
+}
 
 } }

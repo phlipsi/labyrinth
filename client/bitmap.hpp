@@ -1,14 +1,11 @@
 #pragma once
 
-#include <drawable.hpp>
-#include <texture.hpp>
-
 #include <filesystem>
 
-namespace graphic {
+namespace labyrinth { namespace client {
 
 class surface;
 
 surface load_image(const std::filesystem::path &source);
 
-}
+} }
