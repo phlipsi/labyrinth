@@ -9,35 +9,35 @@
 #include <map>
 #include <string>
 
-class test_handler : public labyrinth::server::handler {
+class test_handler : public labyrinth::common::handler {
 public:
     test_handler() : s(0) { }
 
-    virtual void client_hello(int i, const labyrinth::server::message &received) override {
+    virtual void client_hello(int i, const labyrinth::common::message &received) override {
         const std::string name(received.get_payload().data(), received.get_payload().size());
         players.emplace(i, name);
         std::cout << "new player: " << name << std::endl;
     }
 
-    virtual void client_quit(int i, const labyrinth::server::message &received) override {
+    virtual void client_quit(int i, const labyrinth::common::message &received) override {
         const auto it = players.find(i);
         std::cout << "player quits: " << it->second << std::endl;
         players.erase(it);
     }
 
-    virtual labyrinth::server::message push_update(int i, const labyrinth::server::message &received) override {
+    virtual labyrinth::common::message push_update(int i, const labyrinth::common::message &received) override {
         const std::vector<char> &payload = received.get_payload();
         int update = SDLNet_Read32(payload.data());
         s += update;
         std::vector<char> response(sizeof(int32_t));
         SDLNet_Write32(s, response.data());
-        return labyrinth::server::message(labyrinth::server::message::type::GET_STATE, response.data(), response.size());
+        return labyrinth::common::message(labyrinth::common::message::type::GET_STATE, response.data(), response.size());
     }
 
-    virtual labyrinth::server::message get_state(int i, const labyrinth::server::message &received) override {
+    virtual labyrinth::common::message get_state(int i, const labyrinth::common::message &received) override {
         std::vector<char> response(sizeof(int32_t));
         SDLNet_Write32(s, response.data());
-        return labyrinth::server::message(labyrinth::server::message::type::GET_STATE, response.data(), response.size());
+        return labyrinth::common::message(labyrinth::common::message::type::GET_STATE, response.data(), response.size());
     }
 
 private:

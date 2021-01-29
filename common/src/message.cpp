@@ -2,7 +2,7 @@
 
 #include <cstring>
 
-namespace labyrinth { namespace server {
+namespace labyrinth { namespace common {
 
 namespace {
 
@@ -139,10 +139,12 @@ size_t message::get_type_name_len(type t) {
     }
 }
 
-void message::send(TCPsocket destination) const {
-    const char *const type_name = get_type_name(t);
-    const size_t type_name_len = get_type_name_len(t);
+void send(TCPsocket destination, const message &m) {
+    const message::type t = m.get_type();
+    const char *const type_name = message::get_type_name(t);
+    const size_t type_name_len = message::get_type_name_len(t);
 
+    const std::vector<char> &payload = m.get_payload();
     std::vector<char> buffer;
     buffer.reserve(type_name_len + 1 + payload.size());
 

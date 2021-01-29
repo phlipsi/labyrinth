@@ -1,9 +1,9 @@
 #include "server_base.hpp"
 
-#include "handler.hpp"
 #include "message.hpp"
 
 #include <initializer.hpp>
+#include <handler.hpp>
 
 #include <algorithm>
 #include <optional>
@@ -55,7 +55,7 @@ server_base::~server_base() {
     SDLNet_FreeSocketSet(socket_set);
 }
 
-void server_base::run(handler &h, unsigned int timeout) {
+void server_base::run(common::handler &h, unsigned int timeout) {
     SDL_Log("Server: Let's serve!");
     while (running || num_clients > 0) {
         int ready = SDLNet_CheckSockets(socket_set, timeout);
@@ -83,68 +83,69 @@ void server_base::run(handler &h, unsigned int timeout) {
     SDL_Log("Server: Goodbye!");
 }
 
-int server_base::check_client_socket(unsigned int i, handler &h) {
+int server_base::check_client_socket(unsigned int i, common::handler &h) {
     TCPsocket &client = clients[i];
     if (SDLNet_SocketReady(client)) {
         SDL_Log("Client %d: sent some data...", i);
-        const message received = receive(client);
+        const common::message received = common::receive(client);
         if (running) {
             switch (received.get_type()) {
-            case message::type::ERROR:
+            case common::message::type::ERROR:
                 SDL_Log("Client %d: error receiving data: %s", i, SDLNet_GetError());
                 throw std::runtime_error("Error receiving data");
-            case message::type::OK:
+            case common::message::type::OK:
                 SDL_Log("Client %d: Got OK", i);
                 h.ok(i, received);
                 SDL_Log("Client %d: Return OK", i);
-                message(message::type::OK).send(client);
+                send(client, common::ok());
+                //message(message::type::OK).send(client);
                 return 1;
-            case message::type::CLIENT_HELLO:
+            case common::message::type::CLIENT_HELLO:
                 SDL_Log("Client %d: Got CLIENT_OK", i);
                 h.client_hello(i, received);
                 SDL_Log("Client %d: Return OK", i);
-                message(message::type::OK).send(client);
+                send(client, common::ok());
                 return 1;
-            case message::type::PUSH_UPDATE:
+            case common::message::type::PUSH_UPDATE:
                 SDL_Log("Client %d: Got PUSH_UPDATE", i);
-                h.push_update(i, received).send(client);
+                send(client, h.push_update(i, received));
                 return 1;
-            case message::type::GET_STATE:
+            case common::message::type::GET_STATE:
                 SDL_Log("Client %d: Got GET_STATE", i);
-                h.get_state(i, received).send(client);
+                send(client, h.get_state(i, received));
                 return 1;
-            case message::type::SEND_MESSAGE: {
+            case common::message::type::SEND_MESSAGE: {
                 SDL_Log("Client %d: Got SEND_MESSAGE", i);
-                const message answer = h.send_message(i, received);
+                const common::message answer = h.send_message(i, received);
                 SDL_Log("Client %d: Return %lu bytes", i, answer.get_payload().size());
-                answer.send(client);
+                send(client, answer);
                 return 1;
             }
-            case message::type::CLIENT_QUIT:
+            case common::message::type::CLIENT_QUIT:
                 SDL_Log("Client %d: Got CLIENT_QUIT", i);
                 h.client_quit(i, received);
                 SDL_Log("Client %d: Return CLIENT_QUIT", i);
-                received.send(client);
+                send(client, received);
                 remove_client(i);
                 return 1;
-            case message::type::SERVER_QUIT:
+            case common::message::type::SERVER_QUIT:
                 SDL_Log("Client %d: Got SERVER_QUIT", i);
                 h.server_quit(i, received);
                 SDL_Log("Client %d: Return CLIENT_QUIT", i);
-                message(message::type::CLIENT_QUIT).send(client);
+                send(client, common::client_quit());
                 remove_client(i);
                 running = false;
                 return 1;
-            case message::type::UNKNOWN:
+            case common::message::type::UNKNOWN:
             default:
                 SDL_Log("Client %d: unknown command", i);
-                message(message::type::UNKNOWN).send(client);
+                send(client, common::message(common::message::type::UNKNOWN));
                 return 1;
             }
         } else {
             h.client_quit(i, received);
             SDL_Log("Client %d: send CLIENT_QUIT since server shuts down", i);
-            message(message::type::CLIENT_QUIT).send(client);
+            send(client, common::client_quit());
             remove_client(i);
             return 1;
         }

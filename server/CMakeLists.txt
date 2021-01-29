@@ -1,7 +1,5 @@
 add_executable(server
-    handler.cpp
     main.cpp
-    message.cpp
     server_base.cpp)
 target_link_libraries(server PRIVATE common)
 target_link_libraries(server PRIVATE PkgConfig::SDL2_net)

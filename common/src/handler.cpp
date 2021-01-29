@@ -2,7 +2,7 @@
 
 #include "message.hpp"
 
-namespace labyrinth { namespace server {
+namespace labyrinth { namespace common {
 
 bool handler::idle() {
     return true;

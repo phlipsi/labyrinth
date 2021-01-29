@@ -1,6 +1,6 @@
 #pragma once
 
-namespace labyrinth { namespace server {
+namespace labyrinth { namespace common {
 
 class message;
 
