@@ -86,7 +86,6 @@ void server_base::run(common::handler &h, unsigned int timeout) {
 int server_base::check_client_socket(unsigned int i, common::handler &h) {
     TCPsocket &client = clients[i];
     if (SDLNet_SocketReady(client)) {
-        SDL_Log("Client %d: sent some data...", i);
         const common::message received = common::receive(client);
         const common::message answer = h.dispatch(i, received);
         if (running) {

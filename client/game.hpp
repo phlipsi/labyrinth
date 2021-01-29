@@ -28,6 +28,7 @@ public:
 
     virtual event::handling_result handle_event(const event &e);
     virtual void update(uint32_t elapsed_ticks) = 0;
+    virtual void set_state(const std::vector<char> &payload) = 0;
 
     bool is_debug() const { return parser.is_debug(); }
 

@@ -25,9 +25,9 @@ command_line::command_line(int argc, char *argv[])
     for (int i = 1; i < argc; ++i) {
         if (strcmp(argv[i], DEBUG) == 0) {
             debug = true;
-        } else if (strcmp(argv[i], USERNAME) == 0) {
+        } else if (strncmp(argv[i], USERNAME, sizeof(USERNAME) - 1) == 0) {
             username.assign(argv[i] + sizeof(USERNAME) - 1);
-        } else if (strcmp(argv[i], SERVER) == 0) {
+        } else if (strncmp(argv[i], SERVER, sizeof(SERVER) - 1) == 0) {
             const char *value = argv[i] + sizeof(SERVER) - 1;
             const char *const sep = strchr(value, ':');
             if (sep != value) {

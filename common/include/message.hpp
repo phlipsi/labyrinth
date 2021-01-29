@@ -21,7 +21,7 @@ public:
         CLIENT_QUIT
     };
 
-    message(type t, std::vector<char> &&payload);
+    message(type t, std::vector<char> payload);
     message(type t, const char *payload, size_t payload_len);
     message(type t, const char *payload);
     message(type t);

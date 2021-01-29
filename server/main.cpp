@@ -10,7 +10,7 @@
 
 class test_handler : public labyrinth::common::handler {
 public:
-    test_handler() : s(0) { }
+    test_handler() : x(10), y(10) { }
 
     virtual bool on_client_hello(int i, std::string_view name) override {
         players.emplace(i, std::string(name.begin(), name.end()));
@@ -25,22 +25,22 @@ public:
     }
 
     virtual std::vector<char> on_push_update(int i, const std::vector<char> &payload) override {
-        int update = SDLNet_Read32(payload.data());
-        s += update;
-        std::vector<char> response(sizeof(int32_t));
-        SDLNet_Write32(s,response.data());
-        return response;
+        x = SDLNet_Read32(payload.data());
+        y = SDLNet_Read32(payload.data() + sizeof(Uint32));
+        return on_get_state(i);
     }
 
     virtual std::vector<char> on_get_state(int i) override {
-        std::vector<char> response(sizeof(int32_t));
-        SDLNet_Write32(s,response.data());
+        std::vector<char> response(2 * sizeof(Uint32));
+        SDLNet_Write32(x, response.data());
+        SDLNet_Write32(y, response.data() + sizeof(Uint32));
         return response;
     }
 
 private:
     std::map<int, std::string> players;
-    int s;
+    int x;
+    int y;
 };
 
 int main(int argc, char *argv[]) {

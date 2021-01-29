@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 namespace labyrinth { namespace client {
 
 class game_object;
@@ -9,6 +11,7 @@ public:
     enum class type {
         NONE,
         KEY,
+        PUSH_UPDATE,
         INVALIDATE_LEAF_CACHE,
         COLLISION,
         QUIT
@@ -46,6 +49,19 @@ public:
 
 private:
     code c;
+};
+
+class push_update : public event {
+public:
+    explicit push_update(std::vector<char> payload)
+      : event(type::PUSH_UPDATE),
+        payload(std::move(payload))
+    { }
+
+    const std::vector<char> get_payload() const { return payload; }
+
+private:
+    std::vector<char> payload;
 };
 
 class collision : public event {

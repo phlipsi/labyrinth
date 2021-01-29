@@ -45,11 +45,13 @@ void game::run() {
     SDL_Event e;
     uint32_t start = SDL_GetTicks();
     while (!quit) {
+        common::send(socket, common::message(common::message::type::GET_STATE));
+        const common::message answer = common::receive(socket);
+        set_state(answer.get_payload());
+
         while (SDL_PollEvent(&e) != 0) {
             dispatch_event(e);
         }
-        common::send(socket, common::message(common::message::type::GET_STATE));
-        const common::message answer = common::receive(socket);
 
         uint32_t current = SDL_GetTicks();
         update(current - start);
@@ -61,7 +63,14 @@ event::handling_result game::handle_event(const event &e) {
     switch (e.get_type()) {
     case event::type::QUIT:
         quit = true;
-        break;
+        return event::handling_result::CONTINUE;
+    case event::type::PUSH_UPDATE: {
+        const push_update &p = static_cast<const push_update &>(e);
+        common::send(socket, common::message(common::message::type::PUSH_UPDATE, p.get_payload()));
+        const common::message answer = common::receive(socket);
+        set_state(answer.get_payload());
+        return event::handling_result::ABORT;
+    }
     }
     return event::handling_result::CONTINUE;
 }

@@ -59,7 +59,7 @@ std::string_view translate_type_to_command(message::type t) {
 
 }
 
-message::message(type t, std::vector<char> &&payload)
+message::message(type t, std::vector<char> payload)
   : t(t),
     payload(std::move(payload))
 { }
