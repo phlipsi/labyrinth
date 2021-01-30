@@ -2,7 +2,10 @@
 
 namespace labyrinth { namespace client {
 
+texture::texture() : handle(nullptr) { }
+
 texture::texture(SDL_Texture *handle) : handle(handle) { }
+
 texture::~texture() {
     if (handle != nullptr) {
         SDL_DestroyTexture(handle);

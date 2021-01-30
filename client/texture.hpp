@@ -6,6 +6,7 @@ namespace labyrinth { namespace client {
 
 class texture {
 public:
+    texture();
     explicit texture(SDL_Texture *handle);
     ~texture();
 

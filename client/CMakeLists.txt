@@ -5,11 +5,14 @@ add_executable(client
     client.cpp
     command_line.cpp
     game.cpp
+    game_object.cpp
     surface.cpp
     texture.cpp
+    walls.cpp
     window.cpp)
 target_include_directories(client PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
 target_link_libraries(client PRIVATE common)
 target_link_libraries(client PRIVATE PkgConfig::SDL2)
 target_link_libraries(client PRIVATE PkgConfig::SDL2_net)
 target_link_libraries(client PRIVATE PkgConfig::SDL2_image)
+add_dependencies(client assets)

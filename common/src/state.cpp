@@ -111,14 +111,14 @@ std::vector<char> state::write_to() const {
 }
 
 // 076543210
-//    hvoulr
+//    vhuolr
 
 state get_level(int level) {
-    if (level == 0) {
-        return state(2, 2, 2, { 0b111110, 0b011101,
-                                0b111110, 0b011101,
-                                0b111010, 0b101101,
-                                0b110110, 0b101101 },
+    if (level == 0) {          // vhoulr    vhoulr
+        return state(2, 2, 2, { 0b111110, 0b101101,
+                                0b111110, 0b101101,
+                                0b111010, 0b011101,
+                                0b110110, 0b011101 },
                      0, 0, 0,
                      1, 0, 0);
     } else {
