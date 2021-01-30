@@ -1,62 +1,18 @@
 #include <state.hpp>
 
+#include <payload.hpp>
+
 #include <stdexcept>
 
 #include <SDL2/SDL_net.h>
 
 namespace labyrinth { namespace common {
 
-namespace {
-
-unsigned int read(const char *&buffer, const char *end) {
-    if (buffer + sizeof(Uint32) <= end) {
-        unsigned int result = SDLNet_Read32(buffer);
-        buffer += sizeof(Uint32);
-        return result;
-    } else {
-        throw std::runtime_error("Not enough data in buffer");
-    }
-}
-
-std::vector<unsigned int> read_vector(const char *&buffer, const char *end, unsigned int num) {
-    std::vector<unsigned int> result;
-    result.reserve(num);
-    for (std::vector<unsigned int>::size_type i = 0; i < num; ++i) {
-        result.push_back(read(buffer, end));
-    }
-    return result;
-}
-
-void write(unsigned int value, char *&buffer, const char *end) {
-    if (buffer + sizeof(Uint32) <= end) {
-        SDLNet_Write32(value, buffer);
-        buffer += sizeof(Uint32);
-    } else {
-        throw std::runtime_error("Not enough data in buffer");
-    }
-}
-
-void write_vector(const std::vector<unsigned int> &values, char *&buffer, const char *end) {
-    for (unsigned int value : values) {
-        write(value, buffer, end);
-    }
-}
-
-}
-
 state::state()
-  : width(0),
-    height(0),
-    depth(0),
-    x(0),
-    y(0),
-    z(0),
-    goal_x(0),
-    goal_y(0),
-    goal_z(0)
-{ }
+  : state(get_level(0)) { }
 
-state::state(unsigned int width,
+state::state(unsigned int level,
+             unsigned int width,
              unsigned int height,
              unsigned int depth,
              std::vector<unsigned int> tiles,
@@ -66,7 +22,8 @@ state::state(unsigned int width,
              unsigned int goal_x,
              unsigned int goal_y,
              unsigned int goal_z)
-  : width(width),
+  : level(level),
+    width(width),
     height(height),
     depth(depth),
     tiles(std::move(tiles)),
@@ -78,44 +35,45 @@ state::state(unsigned int width,
     goal_z(goal_z)
 { }
 
-void state::read_from(const std::vector<char> &payload) {
-    const char *it = payload.data();
-    const char *const end = payload.data() + payload.size();
-    width = read(it, end);
-    height = read(it, end);
-    depth = read(it, end);
-    tiles = read_vector(it, end, width * height *depth);
-    x = read(it, end);
-    y = read(it, end);
-    z = read(it, end);
-    goal_x = read(it, end);
-    goal_y = read(it, end);
-    goal_z = read(it, end);
+void state::read_from(const char *it, const char *const end) {
+    level = read_uint(it, end);
+    width = read_uint(it, end);
+    height = read_uint(it, end);
+    depth = read_uint(it, end);
+    tiles = read_uint_vector(it, end, width * height *depth);
+    x = read_uint(it, end);
+    y = read_uint(it, end);
+    z = read_uint(it, end);
+    goal_x = read_uint(it, end);
+    goal_y = read_uint(it, end);
+    goal_z = read_uint(it, end);
 }
 
-std::vector<char> state::write_to() const {
-    std::vector<char> result(sizeof(Uint32) * (9 + width * height * depth));
-    char *it = result.data();
-    const char *const end = result.data() + result.size();
-    write(width, it, end);
-    write(height, it, end);
-    write(depth, it, end);
-    write_vector(tiles, it, end);
-    write(x, it, end);
-    write(y, it, end);
-    write(z, it, end);
-    write(goal_x, it, end);
-    write(goal_y, it, end);
-    write(goal_z, it, end);
-    return result;
+size_t state::size() const {
+    return sizeof(Uint32) * (10 + width * height * depth);
+}
+
+void state::write_to(char *&it, const char *const end) const {
+    write_uint(level, it, end);
+    write_uint(width, it, end);
+    write_uint(height, it, end);
+    write_uint(depth, it, end);
+    write_uint_vector(tiles, it, end);
+    write_uint(x, it, end);
+    write_uint(y, it, end);
+    write_uint(z, it, end);
+    write_uint(goal_x, it, end);
+    write_uint(goal_y, it, end);
+    write_uint(goal_z, it, end);
 }
 
 // 076543210
 //    vhuolr
 
 state get_level(int level) {
-    if (level == 0) {          // vhoulr    vhoulr
-        return state(2, 2, 2, { 0b111110, 0b101101,
+    if (level == 0) {
+        return state(0,        // vhoulr    vhoulr
+                     2, 2, 2, { 0b111110, 0b101101,
                                 0b111110, 0b101101,
                                 0b111010, 0b011101,
                                 0b110110, 0b011101 },
@@ -124,6 +82,23 @@ state get_level(int level) {
     } else {
         throw std::runtime_error("Invalid level");
     }
+}
+
+std::vector<char> write(const state &s, int perspective) {
+    std::vector<char> result(s.size() + sizeof(Uint32));
+    char *it = result.data();
+    const char *const end = result.data() + result.size();
+    s.write_to(it, end);
+    write_uint(perspective, it, end);
+    return result;
+}
+std::pair<state, int> read(const std::vector<char> &payload) {
+    const char *it = payload.data();
+    const char *const end = payload.data() + payload.size();
+    std::pair<state, int> result;
+    result.first.read_from(it, end);
+    result.second = read_uint(it, end);
+    return result;
 }
 
 } }

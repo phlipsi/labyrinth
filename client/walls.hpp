@@ -18,6 +18,9 @@ public:
     virtual bool check_collisions(game &g, const game_object &other) const override;
     virtual event::handling_result handle_event(game &g, const event &e) override;
 
+    void set_perspective(int perspective) { this->perspective = perspective; }
+    int get_perspective() const { return perspective; }
+
 private:
     common::state *s;
     int perspective;

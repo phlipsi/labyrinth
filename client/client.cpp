@@ -15,11 +15,11 @@ public:
     labyrinth_game(int argc, char *argv[])
       : game(argc, argv),
         w("Labyrinth", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, SDL_WINDOW_SHOWN),
-        ws(w.get_renderer(), 1, s)
+        ws(w.get_renderer(), 0, s)
     { }
 
     void push_update() {
-        handle_event(labyrinth::client::push_update(s.write_to()));
+        handle_event(labyrinth::client::push_update(write(s, ws.get_perspective())));
     }
 
     virtual labyrinth::client::event::handling_result handle_event(const labyrinth::client::event &e) override {
@@ -48,7 +48,9 @@ public:
     }
 
     virtual void set_state(const std::vector<char> &payload) override {
-        s.read_from(payload);
+        const auto r = labyrinth::common::read(payload);
+        s = r.first;
+        ws.set_perspective(r.second);
     }
 
     virtual void update(uint32_t elapsed_ticks) override {
