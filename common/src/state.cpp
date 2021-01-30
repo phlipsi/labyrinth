@@ -35,7 +35,7 @@ state::state(unsigned int level,
     goal_z(goal_z)
 { }
 
-void state::read_from(const char *it, const char *const end) {
+void state::read_from(const char *&it, const char *const end) {
     level = read_uint(it, end);
     width = read_uint(it, end);
     height = read_uint(it, end);
@@ -67,6 +67,30 @@ void state::write_to(char *&it, const char *const end) const {
     write_uint(goal_z, it, end);
 }
 
+bool tile_has_left_wall(unsigned int tile) {
+    return (tile & 0b000010) != 0;
+}
+
+bool tile_has_right_wall(unsigned int tile) {
+    return (tile & 0b000001) != 0;
+}
+
+bool tile_has_top_wall(unsigned int tile) {
+    return (tile & 0b001000) != 0;
+}
+
+bool tile_has_bottom_wall(unsigned int tile) {
+    return (tile & 0b000100) != 0;
+}
+
+bool tile_has_front_wall(unsigned int tile) {
+    return (tile & 0b100000) != 0;
+}
+
+bool tile_has_back_wall(unsigned int tile) {
+    return (tile & 0b010000) != 0;
+}
+
 // 076543210
 //    vhuolr
 
@@ -78,7 +102,7 @@ state get_level(int level) {
                                 0b111010, 0b011101,
                                 0b110110, 0b011101 },
                      0, 0, 0,
-                     1, 0, 0);
+                     0, 1, 0);
     } else {
         throw std::runtime_error("Invalid level");
     }

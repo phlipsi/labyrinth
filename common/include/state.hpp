@@ -19,7 +19,7 @@ struct state {
           unsigned int goal_y,
           unsigned int goal_z);
 
-    void read_from(const char *data, const char *end);
+    void read_from(const char *&data, const char *end);
 
     size_t size() const;
     void write_to(char *&data, const char *end) const;
@@ -36,6 +36,13 @@ struct state {
     unsigned int goal_y;
     unsigned int goal_z;
 };
+
+bool tile_has_left_wall(unsigned int tile);
+bool tile_has_right_wall(unsigned int tile);
+bool tile_has_top_wall(unsigned int tile);
+bool tile_has_bottom_wall(unsigned int tile);
+bool tile_has_front_wall(unsigned int tile);
+bool tile_has_back_wall(unsigned int tile);
 
 state get_level(int level);
 

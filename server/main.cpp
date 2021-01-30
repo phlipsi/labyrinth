@@ -59,6 +59,7 @@ public:
             break;
         }
         if (!first && !second) {
+            std::cout << "all players left the party, reset to first level" << std::endl;
             s = labyrinth::common::get_level(0);
         }
     }

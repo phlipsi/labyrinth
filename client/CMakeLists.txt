@@ -6,9 +6,9 @@ add_executable(client
     command_line.cpp
     game.cpp
     game_object.cpp
+    level.cpp
     surface.cpp
     texture.cpp
-    walls.cpp
     window.cpp)
 target_include_directories(client PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
 target_link_libraries(client PRIVATE common)

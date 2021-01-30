@@ -1,10 +1,10 @@
 #include "bitmap.hpp"
 #include "game.hpp"
+#include "level.hpp"
 #include "rectangle.hpp"
 #include "renderer.hpp"
 #include "surface.hpp"
 #include "texture.hpp"
-#include "walls.hpp"
 #include "window.hpp"
 
 #include <state.hpp>
@@ -15,11 +15,11 @@ public:
     labyrinth_game(int argc, char *argv[])
       : game(argc, argv),
         w("Labyrinth", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, SDL_WINDOW_SHOWN),
-        ws(w.get_renderer(), 0, s)
+        lvl(w.get_renderer(), 0, s)
     { }
 
     void push_update() {
-        handle_event(labyrinth::client::push_update(write(s, ws.get_perspective())));
+        handle_event(labyrinth::client::push_update(write(s, lvl.get_perspective())));
     }
 
     virtual labyrinth::client::event::handling_result handle_event(const labyrinth::client::event &e) override {
@@ -27,19 +27,24 @@ public:
             const labyrinth::client::key &k = static_cast<const labyrinth::client::key &>(e);
             switch (k.get_code()) {
             case labyrinth::client::key::code::UP:
-                --s.y;
-                push_update();
+                if (lvl.move_up()) {
+                    push_update();
+                }
                 return labyrinth::client::event::handling_result::ABORT;
             case labyrinth::client::key::code::DOWN:
-                ++s.y;
-                push_update();
+                if (lvl.move_down()) {
+                    push_update();
+                }
                 return labyrinth::client::event::handling_result::ABORT;
             case labyrinth::client::key::code::LEFT:
-                --s.x;
-                push_update();
+                if (lvl.move_left()) {
+                    push_update();
+                }
                 return labyrinth::client::event::handling_result::ABORT;
             case labyrinth::client::key::code::RIGHT:
-                ++s.x;
+                if (lvl.move_right()) {
+                    push_update();
+                }
                 push_update();
                 return labyrinth::client::event::handling_result::ABORT;
             }
@@ -50,20 +55,20 @@ public:
     virtual void set_state(const std::vector<char> &payload) override {
         const auto r = labyrinth::common::read(payload);
         s = r.first;
-        ws.set_perspective(r.second);
+        lvl.set_perspective(r.second);
     }
 
     virtual void update(uint32_t elapsed_ticks) override {
         const labyrinth::client::renderer &r = w.get_renderer();
         r.set_draw_color(0, 0, 0, 0xff);
         r.clear();
-        ws.draw(*this, r);
+        lvl.draw(*this, r);
         r.present();
     }
 private:
     labyrinth::client::window w;
     labyrinth::common::state s;
-    labyrinth::client::walls ws;
+    labyrinth::client::level lvl;
 };
 
 
