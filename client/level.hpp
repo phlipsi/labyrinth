@@ -11,14 +11,14 @@
 
 namespace labyrinth::client {
 
-class level : game_object {
+class level {
 public:
     explicit level(const renderer &r);
 
-    virtual void draw(game &g, const renderer &r) const override;
-    virtual void update(game &g, uint32_t elapsed_ticks) override;
-    virtual bool check_collisions(game &g, const game_object &other) const override;
-    virtual event::handling_result handle_event(game &g, const event &e) override;
+    virtual void draw(game &g, const renderer &r) const;
+    virtual void update(game &g, const renderer &r, uint32_t elapsed_ticks);
+    virtual bool check_collisions(game &g, const game_object &other) const;
+    virtual event::handling_result handle_event(game &g, const event &e);
 
     void set_perspective(int perspective) { this->perspective = perspective; }
     int get_perspective() const { return perspective; }
@@ -30,6 +30,7 @@ private:
     font large;
     common::state current;
     common::state next;
+    std::string title;
     float player_x;
     float player_y;
     float player_z;
@@ -38,7 +39,7 @@ private:
     texture bat;
     texture light;
     texture waiting;
-    texture lvl;
+    texture title_texture;
     uint32_t time;
 };
 

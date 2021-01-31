@@ -32,7 +32,7 @@ level::level(const renderer &r)
     bat(r.create_texture_from_surface(load_image(ASSETS_DIRECTORY "/bat.png"))),
     light(r.create_texture_from_surface(load_image(ASSETS_DIRECTORY "/light.png"))),
     waiting(small.render(r, "Waiting for other player...", 0x96, 0x66, 0x66, 0x66)),
-    lvl(small.render(r, "Level 1", 0x96, 0x96, 0x96, 0x66)),
+    title_texture(small.render(r, current.title, 0x96, 0x96, 0x96, 0x66)),
     time(0)
 { }
 
@@ -74,18 +74,20 @@ void level::draw(game &g, const renderer &r) const {
     r.copy(light, rectangle{ 0, 0, 80, 60 },
            rectangle{ static_cast<int>(128 + you_u * 256 - 800), static_cast<int>(128 + you_v * 256 - 600), 1600, 1200 },
            0.0, point<int>{ 0, 0 }, false);
-    r.copy(waiting, rectangle{ 0, 0, static_cast<int>(waiting.get_width()), static_cast<int>(waiting.get_height()) },
+    /*r.copy(waiting, rectangle{ 0, 0, static_cast<int>(waiting.get_width()), static_cast<int>(waiting.get_height()) },
            rectangle{ static_cast<int>(800 - waiting.get_width()) / 2, static_cast<int>(600 - waiting.get_height()) / 2, static_cast<int>(waiting.get_width()), static_cast<int>(waiting.get_height()) },
            0.0,
            point<int>{ 0, 0 },
-           false);
-    r.copy(lvl, rectangle{ 0, 0, static_cast<int>(lvl.get_width()), static_cast<int>(lvl.get_height()) }, rectangle{ 10, static_cast<int>(600 - lvl.get_height()) - 10, static_cast<int>(lvl.get_width()), static_cast<int>(lvl.get_height()) },
+           false);*/
+    r.copy(title_texture,
+           rectangle{ 0, 0, static_cast<int>(title_texture.get_width()), static_cast<int>(title_texture.get_height()) },
+           rectangle{ 10, static_cast<int>(600 - title_texture.get_height()) - 10, static_cast<int>(title_texture.get_width()), static_cast<int>(title_texture.get_height()) },
            0.0,
            point<int>{ 0, 0 },
            false);
 }
 
-void level::update(game &g, uint32_t elapsed_ticks) {
+void level::update(game &g, const renderer &r, uint32_t elapsed_ticks) {
     time += elapsed_ticks;
     if (time > 1200) {
         current = next;
@@ -109,6 +111,10 @@ void level::update(game &g, uint32_t elapsed_ticks) {
         player_z = current.z * (1200 - time) / 1200.0 + next.z * time / 1200.0;
     } else {
         player_z = current.z;
+    }
+    if (current.title != next.title) {
+        title = next.title;
+        title_texture = small.render(r, title, 0x96, 0x96, 0x96, 0x66);
     }
     SDL_SetTextureAlphaMod(waiting.get_handle(), static_cast<int8_t>(256.0 * (sin(M_PI * time / 1200.0) + 1.0)));
 }

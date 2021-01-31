@@ -100,7 +100,7 @@ void send(TCPsocket destination, const message &m) {
 }
 
 message receive(TCPsocket source) {
-    std::vector<char> buffer(128);
+    std::vector<char> buffer(256);
     const int received = SDLNet_TCP_Recv(source, buffer.data(), buffer.size());
     if (received < 0) {
         const char *const error = SDLNet_GetError();

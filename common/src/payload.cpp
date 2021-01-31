@@ -40,4 +40,17 @@ void write_uint_vector(const std::vector<unsigned int> &values, char *&buffer, c
     }
 }
 
+std::string read_string(const char *&buffer, const char *end) {
+    const size_t len = read_uint(buffer, end);
+    const std::vector<unsigned int> content = read_uint_vector(buffer, end, len);
+    return std::string(content.begin(), content.end());
+}
+
+void write_string(std::string_view s, char *&buffer, const char *end) {
+    write_uint(s.length(), buffer, end);
+    for (char c : s) {
+        write_uint(c, buffer, end);
+    }
+}
+
 }

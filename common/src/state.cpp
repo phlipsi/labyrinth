@@ -11,7 +11,8 @@ namespace labyrinth { namespace common {
 state::state()
   : state(get_level(0)) { }
 
-state::state(unsigned int level,
+state::state(std::string title,
+             unsigned int level,
              unsigned int width,
              unsigned int height,
              unsigned int depth,
@@ -22,7 +23,8 @@ state::state(unsigned int level,
              unsigned int goal_x,
              unsigned int goal_y,
              unsigned int goal_z)
-  : level(level),
+  : title(title),
+    level(level),
     width(width),
     height(height),
     depth(depth),
@@ -36,6 +38,7 @@ state::state(unsigned int level,
 { }
 
 void state::read_from(const char *&it, const char *const end) {
+    title = read_string(it, end);
     level = read_uint(it, end);
     width = read_uint(it, end);
     height = read_uint(it, end);
@@ -50,10 +53,11 @@ void state::read_from(const char *&it, const char *const end) {
 }
 
 size_t state::size() const {
-    return sizeof(Uint32) * (10 + width * height * depth);
+    return sizeof(Uint32) * (10 + width * height * depth + title.length() + 1);
 }
 
 void state::write_to(char *&it, const char *const end) const {
+    write_string(title, it, end);
     write_uint(level, it, end);
     write_uint(width, it, end);
     write_uint(height, it, end);
@@ -157,7 +161,8 @@ std::tuple<int, int, int> state::get_movement_diff(const state &other) const {
 
 state get_level(int level) {
     if (level == 0) {
-        return state(0,        // vhoulr    vhoulr
+        return state("back and forth",
+                     0,        // vhoulr    vhoulr
                      2, 2, 2, { 0b111110, 0b101101,
                                 0b111110, 0b101101,
                                 0b111010, 0b011101,

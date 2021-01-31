@@ -25,7 +25,7 @@ texture font::render(const renderer &r,
                      uint8_t r1,
                      uint8_t g1,
                      uint8_t b1,
-                     uint8_t a1)
+                     uint8_t a1) const
 {
     SDL_Color c{ r1, g1, b1, a1 };
     // SDL_Color b{ 0, 0, 0, 0x01 };

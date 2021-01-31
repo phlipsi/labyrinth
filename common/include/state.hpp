@@ -2,6 +2,7 @@
 
 #include <movement.hpp>
 
+#include <string>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -10,7 +11,8 @@ namespace labyrinth { namespace common {
 
 struct state {
     state();
-    state(unsigned int level,
+    state(std::string title,
+          unsigned int level,
           unsigned int width,
           unsigned int height,
           unsigned int depth,
@@ -33,6 +35,7 @@ struct state {
 
     std::tuple<int, int, int> get_movement_diff(const state &other) const;
 
+    std::string title;
     unsigned int level;
     unsigned int width;
     unsigned int height;

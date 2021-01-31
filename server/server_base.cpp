@@ -69,7 +69,7 @@ void server_base::run(common::handler &h, unsigned int timeout) {
         } else if (ready > 0) {
             ready -= check_server_socket();
 
-            std::vector<char> data(128);
+            std::vector<char> data(256);
             unsigned int i = 0;
             while (i < clients.size() && ready > 0) {
                 TCPsocket &client = clients[i];

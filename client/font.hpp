@@ -23,7 +23,7 @@ public:
                    uint8_t r1,
                    uint8_t g1,
                    uint8_t b1,
-                   uint8_t a1);
+                   uint8_t a1) const;
 
 private:
     TTF_Font *f;
