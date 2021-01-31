@@ -67,6 +67,62 @@ void state::write_to(char *&it, const char *const end) const {
     write_uint(goal_z, it, end);
 }
 
+unsigned int state::get_tile(unsigned int x, unsigned int y, unsigned int z) const {
+    return tiles[x + width * y + width * height * z];
+}
+
+
+bool state::try_movement(movement m) {
+    unsigned int tile = get_tile(x, y, z);
+    switch (m) {
+    case movement::LEFT:
+        if ((tile & 0b000010) == 0) {
+            --x;
+            return true;
+        } else {
+            return false;
+        }
+    case movement::RIGHT:
+        if ((tile & 0b000001) == 0) {
+            ++x;
+            return true;
+        } else {
+            return false;
+        }
+    case movement::UP:
+        if ((tile & 0b001000) == 0) {
+            --y;
+            return true;
+        } else {
+            return false;
+        }
+    case movement::DOWN:
+        if ((tile & 0b000100) == 0) {
+            ++y;
+            return true;
+        } else {
+            return false;
+        }
+    case movement::FORTH:
+        if ((tile & 0b010000) == 0) {
+            ++z;
+            return true;
+        } else {
+            return false;
+        }
+    case movement::BACK:
+        if ((tile & 0b100000) == 0) {
+            --z;
+            return true;
+        } else {
+            return false;
+        }
+    case movement::NONE:
+    default:
+        return true;
+    }
+}
+
 bool tile_has_left_wall(unsigned int tile) {
     return (tile & 0b000010) != 0;
 }

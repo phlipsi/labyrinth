@@ -11,6 +11,7 @@ const char UNKNOWN[]      = "UNKNOWN";
 const char OK[]           = "OK";
 const char CLIENT_HELLO[] = "CLIENT_HELLO";
 const char PUSH_UPDATE[]  = "PUSH_UPDATE";
+const char TRY_PUSH_MOVEMENT[] = "TRY_PUSH_MOVEMENT";
 const char GET_STATE[]    = "GET_STATE";
 const char SEND_MESSAGE[] = "SEND_MESSAGE";
 const char SERVER_QUIT[]  = "SERVER_QUIT";
@@ -25,6 +26,8 @@ message::type translate_command_to_type(const char *command, size_t command_len)
         return message::type::CLIENT_QUIT;
     } else if (strncmp(command, PUSH_UPDATE, command_len) == 0) {
         return message::type::PUSH_UPDATE;
+    } else if (strncmp(command, TRY_PUSH_MOVEMENT, command_len) == 0) {
+        return message::type::TRY_PUSH_MOVEMENT;
     } else if (strncmp(command, GET_STATE, command_len) == 0) {
         return message::type::GET_STATE;
     } else if (strncmp(command, SEND_MESSAGE, command_len) == 0) {
@@ -46,6 +49,8 @@ std::string_view translate_type_to_command(message::type t) {
         return std::string_view(CLIENT_QUIT, sizeof(CLIENT_QUIT) - 1);
     case message::type::PUSH_UPDATE:
         return std::string_view(PUSH_UPDATE, sizeof(PUSH_UPDATE) - 1);
+    case message::type::TRY_PUSH_MOVEMENT:
+        return std::string_view(TRY_PUSH_MOVEMENT, sizeof(TRY_PUSH_MOVEMENT) - 1);
     case message::type::GET_STATE:
         return std::string_view(GET_STATE, sizeof(GET_STATE) - 1);
     case message::type::SEND_MESSAGE:

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <movement.hpp>
 #include <message.hpp>
 
 #include <string_view>
@@ -25,6 +26,7 @@ public:
     virtual void on_client_quit(int client_id);
 
     virtual std::vector<char> on_push_update(int client_id, const std::vector<char> &payload);
+    virtual std::vector<char> on_try_push_movement(int client_id, movement m);
     virtual std::vector<char> on_get_state(int client_id);
 
     virtual void on_server_quit(int client_id);

@@ -15,6 +15,7 @@ public:
         OK,
         CLIENT_HELLO,
         PUSH_UPDATE,
+        TRY_PUSH_MOVEMENT,
         GET_STATE,
         SEND_MESSAGE,
         SERVER_QUIT,

@@ -118,6 +118,18 @@ public:
         }
     }
 
+    virtual std::vector<char> on_try_push_movement(int i, labyrinth::common::movement m) override {
+        const auto it = players.find(i);
+        if (it != players.end()) {
+            player &pl = it->second;
+            labyrinth::common::state &s = parties[pl.get_party_index()].get_state();
+            s.try_movement(m);
+            return write(s, pl.get_perspective());
+        } else {
+            return {};
+        }
+    }
+
     virtual std::vector<char> on_get_state(int i) override {
         const auto it = players.find(i);
         if (it != players.end()) {

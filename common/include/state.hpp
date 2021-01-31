@@ -1,5 +1,7 @@
 #pragma once
 
+#include <movement.hpp>
+
 #include <utility>
 #include <vector>
 
@@ -23,6 +25,10 @@ struct state {
 
     size_t size() const;
     void write_to(char *&data, const char *end) const;
+
+    unsigned int get_tile(unsigned int x, unsigned int y, unsigned int z) const;
+
+    bool try_movement(movement m);
 
     unsigned int level;
     unsigned int width;

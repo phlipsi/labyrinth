@@ -25,6 +25,8 @@ message handler::dispatch(int client_id, const message &received) {
         return message(message::type::CLIENT_QUIT);
     case message::type::PUSH_UPDATE:
         return message(message::type::GET_STATE, on_push_update(client_id, received.get_payload()));
+    case message::type::TRY_PUSH_MOVEMENT:
+        return message(message::type::TRY_PUSH_MOVEMENT, on_try_push_movement(client_id, read_movement(received.get_payload())));
     case message::type::GET_STATE:
         return message(message::type::GET_STATE, on_get_state(client_id));
     case message::type::SEND_MESSAGE: {
@@ -70,6 +72,10 @@ bool handler::on_client_hello(int client_id, std::string_view name) {
 void handler::on_client_quit(int client_id) { }
 
 std::vector<char> handler::on_push_update(int client_id, const std::vector<char> &payload) {
+    return {};
+}
+
+std::vector<char> handler::on_try_push_movement(int client_id, movement m) {
     return {};
 }
 
