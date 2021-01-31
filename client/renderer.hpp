@@ -33,7 +33,8 @@ public:
 
     virtual int copy(const texture &source, const rectangle &source_rect,
                      const rectangle &dest_rect,
-                     float angle, const point<int> &mid) const = 0;
+                     float angle, const point<int> &mid,
+                     bool flip) const = 0;
 
     virtual int line(const point<int> &p, const point<int> &q) const = 0;
 

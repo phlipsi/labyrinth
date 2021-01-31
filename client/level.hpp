@@ -5,6 +5,7 @@
 
 #include <state.hpp>
 
+#include <cstdint>
 #include <array>
 
 namespace labyrinth::client {
@@ -30,8 +31,9 @@ private:
     common::state *s;
     int perspective;
     texture walls;
-    texture items;
+    texture bat;
     texture light;
+    uint32_t time;
 };
 
 }

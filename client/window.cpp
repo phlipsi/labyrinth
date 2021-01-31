@@ -25,7 +25,8 @@ public:
 
     virtual int copy(const texture &source, const rectangle &source_rect,
                      const rectangle &dest_rect,
-                     float angle, const point<int> &mid) const;
+                     float angle, const point<int> &mid,
+                     bool flip) const;
 
     virtual int line(const point<int> &p, const point<int> &q) const;
 
@@ -82,12 +83,12 @@ int sdl_renderer::clear() const {
 
 int sdl_renderer::copy(const texture &source, const rectangle &source_rect,
                        const rectangle &dest_rect,
-                       float angle, const point<int> &mid) const
+                       float angle, const point<int> &mid, bool flip) const
 {
     const SDL_Rect source_rect2 = source_rect.get_sdl_rect();
     const SDL_Rect dest_rect2 = dest_rect.get_sdl_rect();
     const SDL_Point mid2 { mid.x, mid.y };
-    return SDL_RenderCopyEx(handle, source.get_handle(), &source_rect2, &dest_rect2, angle, &mid2, SDL_FLIP_NONE);
+    return SDL_RenderCopyEx(handle, source.get_handle(), &source_rect2, &dest_rect2, angle, &mid2, flip ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
 }
 
 int sdl_renderer::line(const point<int> &p, const point<int> &q) const {

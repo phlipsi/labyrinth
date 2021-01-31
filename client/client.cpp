@@ -62,6 +62,7 @@ public:
         const labyrinth::client::renderer &r = w.get_renderer();
         r.set_draw_color(0, 0, 0, 0xff);
         r.clear();
+        lvl.update(*this, elapsed_ticks);
         lvl.draw(*this, r);
         r.present();
     }

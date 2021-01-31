@@ -27,8 +27,9 @@ level::level(const renderer &r, int perspective, common::state &s)
   : s(&s),
     perspective(perspective),
     walls(r.create_texture_from_surface(load_image(ASSETS_DIRECTORY "/walls.png"))),
-    items(r.create_texture_from_surface(load_image(ASSETS_DIRECTORY "/items.png"))),
-    light(r.create_texture_from_surface(load_image(ASSETS_DIRECTORY "/light.png")))
+    bat(r.create_texture_from_surface(load_image(ASSETS_DIRECTORY "/bat.png"))),
+    light(r.create_texture_from_surface(load_image(ASSETS_DIRECTORY "/light.png"))),
+    time(0)
 { }
 
 void level::draw(game &g, const renderer &r) const {
@@ -41,30 +42,31 @@ void level::draw(game &g, const renderer &r) const {
     const int you_u = perspective == 0 ? s->x : s->z;
     const int you_v = s->y;
 
-    for (int u = 0; u < std::min(13, you_u + 4); ++u) {
-        for (int v = 0; v < std::min(10, you_v + 3); ++v) {
-            r.copy(walls, rectangle{ 0x10 * 64, 0, 64, 64 }, rectangle{ u * 128, v * 128, 128, 128 }, 0.0, point<int>{ 0, 0 });
+    for (int u = 0; u < 7; ++u) {
+        for (int v = 0; v < 5; ++v) {
+            r.copy(walls, rectangle{ 0x10 * 128, 0, 128, 128 }, rectangle{ u * 256, v * 256, 256, 256 }, 0.0, point<int>{ 0, 0 }, false);
         }
     }
     for (int u = 0; u < width; ++u) {
         for (int v = 0; v < height; ++v) {
             const int pos = u * du + v * dv + w * dw;
             const int unsigned tile = tile_index(s->tiles[pos], perspective);
-            r.copy(walls, rectangle{ static_cast<int>(tile) * 64, 0, 64, 64 }, rectangle{ (u + 1) * 128, (v + 1) * 128, 128, 128 }, 0.0, point<int>{ 0, 0 });
+            r.copy(walls, rectangle{ static_cast<int>(tile) * 128, 0, 128, 128 }, rectangle{ u * 256, v * 256, 256, 256 }, 0.0, point<int>{ 0, 0 }, false);
         }
     }
     const int goal_u = perspective == 0 ? s->goal_x : s->goal_z;
     const int goal_v = s->goal_y;
     const int goal_w = perspective == 0 ? s->goal_z : s->goal_x;
+    const int bat_index = time / 300;
     if (perspective == 0) {
-        r.copy(items, rectangle{ 64, 0, 64, 64 }, rectangle{ (you_u + 1) * 128, (you_v + 1) * 128, 128, 128 }, 0.0, point<int>{ 0, 0 });
+        r.copy(bat, rectangle{ bat_index * 128, 0, 128, 128 }, rectangle{ you_u * 256 + 64, you_v * 256 + 64, 128, 128 }, 0.0, point<int>{ 0, 0 }, false);
     } else {
-        r.copy(items, rectangle{ 0, 0, 64, 64 }, rectangle{ (you_u + 1) * 128, (you_v + 1) * 128, 128, 128 }, 0.0, point<int>{ 0, 0 });
+        r.copy(bat, rectangle{ bat_index * 128, 0, 128, 128 }, rectangle{ you_u * 256 + 64, you_v * 256 + 64, 128, 128 }, 0.0, point<int>{ 0, 0 }, true);
     }
     if (goal_w == w) {
-        r.copy(items, rectangle{ 128, 0, 64, 64 }, rectangle{ (goal_u + 1) * 128, (goal_v + 1) * 128, 128, 128 }, 0.0, point<int>{ 0, 0 });
+        r.copy(bat, rectangle{ 512, 0, 128, 128 }, rectangle{ goal_u * 256, goal_v * 256, 256, 256 }, 0.0, point<int>{ 0, 0 }, false);
     }
-    r.copy(light, rectangle{ 0, 0, 800, 600 }, rectangle { 64 + (you_u + 1) * 128 - 400, 64 + (you_v + 1) * 128 - 300, 800, 600 }, 0.0, point<int>{ 0, 0 });
+    r.copy(light, rectangle{ 0, 0, 80, 60 }, rectangle { 128 + you_u * 256 - 800, 128 + you_v * 256 - 600, 1600, 1200 }, 0.0, point<int>{ 0, 0 }, false);
 }
 
 
@@ -118,7 +120,12 @@ bool level::move_down() {
     return false;
 }
 
-void level::update(game &g, uint32_t elapsed_ticks) { }
+void level::update(game &g, uint32_t elapsed_ticks) {
+    time += elapsed_ticks;
+    if (time > 1200) {
+        time = 0;
+    }
+}
 
 bool level::check_collisions(game &g, const game_object &other) const {
     return false;
