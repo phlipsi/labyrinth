@@ -166,19 +166,89 @@ std::tuple<int, int, int> state::get_movement_diff(const state &other) const {
 state get_level(int level) {
     if (level == 0) {
         return state("first come first move",
-                     0,        // vhoulr    vhoulr
+                     level,    // vhoulr    vhoulr
                      2, 1, 1, { 0b111110, 0b111101 },
                      0, 0, 0,
                      1, 0, 0);
     } else if (level == 1) {
         return state("but the other one too",
-                     1,        // vhoulr    vhoulr
+                     level,    // vhoulr    vhoulr
                      1, 1, 2, { 0b101111, 0b011111 },
                      0, 0, 0,
                      0, 0, 1);
     } else if (level == 2) {
+        return state("don't see that comming",
+                     level,    // vhoulr    vhoulr
+                     2, 1, 2, { 0b111110,  0b101101,
+                                0b1000000, 0b011111 },
+                     0, 0, 0,
+                     1, 0, 1);
+    } else if (level == 3) {
+        return state("behind a wall",
+                     level,    // vhoulr    vhoulr
+                     2, 1, 2, { 0b111110, 0b101101,
+                                0b111110, 0b011101 },
+                     0, 0, 0,
+                     0, 0, 1);
+    } else if (level == 4) {
+        return state("it's a trap",
+                     level,    // vhoulr    vhoulr
+                     3, 1, 2, { 0b111110, 0b101100, 0b101101,
+                               0b1000000, 0b011111, 0b011111 },
+                     0, 0, 0,
+                     2, 0, 1);
+    } else if (level == 5) {
+        return state("it's a trap",
+                     level,    // vhoulr    vhoulr
+                     3, 1, 2, { 0b111110, 0b101100, 0b101101,
+                               0b1000000, 0b011111, 0b011111 },
+                     0, 0, 0,
+                     2, 0, 1);
+    } else if (level == 6) {
+        return state("down the well",
+                     level,    // vhoulr    vhoulr
+                     2, 2, 2, { 0b111110, 0b111001,
+                               0b1000000, 0b100111,
+                               0b1000000, 0b1000000,
+                               0b1000000, 0b011111 },
+                     0, 0, 0,
+                     1, 1, 1);
+    } else if (level == 7) {
+        return state("but not always",
+                     level,    // vhoulr    vhoulr
+                     3, 2, 2, { 0b111110, 0b101001,  0b1000000,
+                               0b1000000, 0b110110,  0b111101,
+                               0b1000000, 0b011111,  0b1000000,
+                               0b1000000, 0b1000000, 0b1000000 },
+                     0, 0, 0,
+                     1, 0, 1);
+    } else if (level == 8) {
+        return state("in depth",
+                     level,    // vhoulr    vhoulr
+                     3, 1, 3, { 0b111110, 0b101100,  0b111101,
+                               0b1000000, 0b001111,  0b1000000,
+                                0b111110, 0b011100,  0b111101 },
+                     0, 0, 0,
+                     2, 0, 2);
+    } else if (level == 9) {
+        return state("crossroad",
+                     level,    // vhoulr    vhoulr
+                     3, 3, 3, { 0b1000000, 0b1000000, 0b1000000,
+                                0b1000000,  0b101111, 0b1000000,
+                                0b1000000, 0b1000000, 0b1000000,
+
+                                0b1000000,  0b111011, 0b1000000,
+                                 0b111110,  0b000000,  0b111101,
+                                0b1000000,  0b110111, 0b1000000,
+
+                                0b1000000, 0b1000000, 0b1000000,
+                                0b1000000,  0b011110,  0b111101,
+                                0b1000000, 0b1000000, 0b1000000 },
+                     0, 1, 1,
+                     2, 1, 2);
+    } else if (level == 10) {
         return state("back and forth",
-                     2,        // vhoulr    vhoulr
+                     level,    // vhoulr    vhoulr
                      2, 2, 2, { 0b111110, 0b101101,
                                 0b111110, 0b101101,
                                 0b111010, 0b011101,

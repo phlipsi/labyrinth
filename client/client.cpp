@@ -20,7 +20,7 @@ public:
     labyrinth_game(int argc, char *argv[])
       : game(argc, argv),
         m(is_no_music() ? nullptr : new labyrinth::client::music(std::filesystem::path(ASSETS_DIRECTORY) / "labyrinth.ogg")),
-        w("Labyrinth", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, SDL_WINDOW_SHOWN),
+        w("Labyrinth", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 800, SDL_WINDOW_SHOWN),
         lvl(w.get_renderer())
     {
         if (m) {

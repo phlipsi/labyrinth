@@ -14,10 +14,14 @@ namespace labyrinth::client {
 namespace {
 
 unsigned int tile_index(unsigned int tile, int perspective) {
-    if (perspective == 0) {
-        return tile & 0x0f;
+    if (tile > 0b111111) {
+        return 0x10;
     } else {
-        return ((tile & 0x30) >> 4) | (tile & 0x0c);
+        if (perspective == 0) {
+            return tile & 0x0f;
+        } else {
+            return ((tile & 0x30) >> 4) | (tile & 0x0c);
+        }
     }
 }
 
@@ -51,7 +55,7 @@ void level::draw(game &g, const renderer &r) const {
     const float you_w = perspective == 0 ? player_z : player_x;
 
     for (int u = 0; u < 7; ++u) {
-        for (int v = 0; v < 5; ++v) {
+        for (int v = 0; v < 7; ++v) {
             r.copy(walls, rectangle{ 0x10 * 128, 0, 128, 128 }, rectangle{ u * 256, v * 256, 256, 256 }, 0.0, point<int>{ 0, 0 }, false);
         }
     }
@@ -74,8 +78,8 @@ void level::draw(game &g, const renderer &r) const {
     r.copy(bat, rectangle{ bat_index * 128, 0, 128, 128 },
         rectangle{ static_cast<int>(you_u * 256 + 64 - scale / 2), static_cast<int>(you_v * 256 + 64 - scale / 2), static_cast<int>(128 + scale), static_cast<int>(128 + scale)},
         0.0, point<int>{ 0, 0 }, flip);
-    r.copy(light, rectangle{ 0, 0, 80, 60 },
-           rectangle{ static_cast<int>(128 + you_u * 256 - 800), static_cast<int>(128 + you_v * 256 - 600), 1600, 1200 },
+    r.copy(light, rectangle{ 0, 0, 80, 80 },
+           rectangle{ static_cast<int>(128 + you_u * 256 - 800), static_cast<int>(128 + you_v * 256 - 800), 1600, 1600 },
            0.0, point<int>{ 0, 0 }, false);
     /*r.copy(waiting, rectangle{ 0, 0, static_cast<int>(waiting.get_width()), static_cast<int>(waiting.get_height()) },
            rectangle{ static_cast<int>(800 - waiting.get_width()) / 2, static_cast<int>(600 - waiting.get_height()) / 2, static_cast<int>(waiting.get_width()), static_cast<int>(waiting.get_height()) },
@@ -84,27 +88,27 @@ void level::draw(game &g, const renderer &r) const {
            false);*/
     r.copy(title_texture,
            rectangle{ 0, 0, static_cast<int>(title_texture.get_width()), static_cast<int>(title_texture.get_height()) },
-           rectangle{ 10, static_cast<int>(600 - title_texture.get_height()) - 10, static_cast<int>(title_texture.get_width()), static_cast<int>(title_texture.get_height()) },
+           rectangle{ 10, static_cast<int>(800 - title_texture.get_height()) - 10, static_cast<int>(title_texture.get_width()), static_cast<int>(title_texture.get_height()) },
            0.0,
            point<int>{ 0, 0 },
            false);
     SDL_SetTextureAlphaMod(found_texture.get_handle(), static_cast<uint8_t>(255.0 * found_texture_decay));
     r.copy(found_texture,
            rectangle{ 0, 0, static_cast<int>(found_texture.get_width()), static_cast<int>(found_texture.get_height()) },
-           rectangle{ static_cast<int>(800 - 20 * (1.0 - found_texture_decay) * found_texture.get_width()) / 2, static_cast<int>(600 - 20 * (1.0 - found_texture_decay) * found_texture.get_height()) / 2, static_cast<int>(20 * (1.0 - found_texture_decay) * found_texture.get_width()), static_cast<int>(20 * (1.0 - found_texture_decay) * found_texture.get_height()) },
+           rectangle{ static_cast<int>(800 - 20 * (1.0 - found_texture_decay) * found_texture.get_width()) / 2, static_cast<int>(800 - 20 * (1.0 - found_texture_decay) * found_texture.get_height()) / 2, static_cast<int>(20 * (1.0 - found_texture_decay) * found_texture.get_width()), static_cast<int>(20 * (1.0 - found_texture_decay) * found_texture.get_height()) },
            0.0,
            point<int>{ 0, 0 },
            false);
     if (found_texture_decay < 0.01 && current.level == common::MAX_LEVELS) {
         r.copy(won_texture, rectangle{ 0, 0, static_cast<int>(won_texture.get_width()), static_cast<int>(won_texture.get_height()) },
-               rectangle{ static_cast<int>(800 - won_texture.get_width()) / 2, static_cast<int>(600 - won_texture.get_height()) / 2, static_cast<int>(won_texture.get_width()), static_cast<int>(won_texture.get_height()) },
+               rectangle{ static_cast<int>(800 - won_texture.get_width()) / 2, static_cast<int>(800 - won_texture.get_height()) / 2, static_cast<int>(won_texture.get_width()), static_cast<int>(won_texture.get_height()) },
                0.0, point<int>{ 0, 0 }, false);
     }
 }
 
 void level::update(game &g, const renderer &r, uint32_t elapsed_ticks) {
     if (found_texture_decay > 0) {
-        found_texture_decay -= elapsed_ticks * 0.001;
+        found_texture_decay -= elapsed_ticks * 0.0005;
     }
     if (found_texture_decay < 0) {
         found_texture_decay = 0;

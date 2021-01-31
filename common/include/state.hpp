@@ -9,7 +9,7 @@
 
 namespace labyrinth { namespace common {
 
-const int MAX_LEVELS = 3;
+const int MAX_LEVELS = 11;
 
 struct state {
     state();
