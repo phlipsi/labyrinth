@@ -30,6 +30,8 @@ public:
     virtual void update(uint32_t elapsed_ticks) = 0;
     virtual void set_state(const std::vector<char> &payload) = 0;
 
+    common::message send_to_server(const common::message &m) const;
+
     bool is_no_music() const { return parser.is_no_music(); }
     bool is_debug() const { return parser.is_debug(); }
 

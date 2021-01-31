@@ -123,8 +123,11 @@ public:
         if (it != players.end()) {
             player &pl = it->second;
             labyrinth::common::state &s = parties[pl.get_party_index()].get_state();
-            s.try_movement(m);
-            return write(s, pl.get_perspective());
+            if (s.try_movement(m)) {
+                return write(s, pl.get_perspective());
+            } else {
+                return {};
+            }
         } else {
             return {};
         }
