@@ -113,6 +113,7 @@ window::window(const std::string &title, int x, int y, int w, int h, uint32_t fl
     if (handle == nullptr) {
         throw std::runtime_error("Error creating window");
     }
+    r->set_blend_mode(renderer::blend_mode::ADD);
 }
 
 window::~window() {

@@ -39,6 +39,8 @@ private:
     texture bat;
     texture light;
     texture waiting;
+    float found_texture_decay;
+    texture found_texture;
     texture title_texture;
     uint32_t time;
 };

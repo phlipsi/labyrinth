@@ -26,7 +26,7 @@ message handler::dispatch(int client_id, const message &received) {
     case message::type::PUSH_UPDATE:
         return message(message::type::GET_STATE, on_push_update(client_id, received.get_payload()));
     case message::type::TRY_PUSH_MOVEMENT:
-        return message(message::type::TRY_PUSH_MOVEMENT, on_try_push_movement(client_id, read_movement(received.get_payload())));
+        return message(message::type::GET_STATE, on_try_push_movement(client_id, read_movement(received.get_payload())));
     case message::type::GET_STATE:
         return message(message::type::GET_STATE, on_get_state(client_id));
     case message::type::SEND_MESSAGE: {

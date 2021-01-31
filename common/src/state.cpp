@@ -127,6 +127,10 @@ bool state::try_movement(movement m) {
     }
 }
 
+bool state::win() const {
+    return x == goal_x && y == goal_y && z == goal_z;
+}
+
 bool tile_has_left_wall(unsigned int tile) {
     return (tile & 0b000010) != 0;
 }
@@ -161,8 +165,20 @@ std::tuple<int, int, int> state::get_movement_diff(const state &other) const {
 
 state get_level(int level) {
     if (level == 0) {
-        return state("back and forth",
+        return state("first come first move",
                      0,        // vhoulr    vhoulr
+                     2, 1, 1, { 0b111110, 0b111101 },
+                     0, 0, 0,
+                     1, 0, 0);
+    } else if (level == 1) {
+        return state("but the other one too",
+                     1,        // vhoulr    vhoulr
+                     1, 1, 2, { 0b101111, 0b011111 },
+                     0, 0, 0,
+                     0, 0, 1);
+    } else if (level == 2) {
+        return state("back and forth",
+                     2,        // vhoulr    vhoulr
                      2, 2, 2, { 0b111110, 0b101101,
                                 0b111110, 0b101101,
                                 0b111010, 0b011101,

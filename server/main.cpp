@@ -31,9 +31,11 @@ private:
     int perspective;
 };
 
+static const int DEFAULT_COOL_DOWN = 2000;
+
 class party {
 public:
-    party() : first(false), second(false) { }
+    party() : first(false), second(false), win_cool_down(DEFAULT_COOL_DOWN) { }
 
     bool join(player &p) {
         if (!first) {
@@ -66,9 +68,13 @@ public:
 
     labyrinth::common::state &get_state() { return s; }
 
+    int get_win_cool_down() const { return win_cool_down; }
+    void set_win_cool_down(int win_cool_down) { this->win_cool_down = win_cool_down; }
+
 private:
     bool first;
     bool second;
+    int win_cool_down;
     labyrinth::common::state s;
 };
 
@@ -122,9 +128,14 @@ public:
         const auto it = players.find(i);
         if (it != players.end()) {
             player &pl = it->second;
-            labyrinth::common::state &s = parties[pl.get_party_index()].get_state();
+            party &p = parties[pl.get_party_index()];
+            labyrinth::common::state &s = p.get_state();
             if (s.try_movement(m)) {
-                return write(s, pl.get_perspective());
+                const std::vector<char> answer = write(s, pl.get_perspective());
+                if (s.win()) {
+                    p.set_win_cool_down(DEFAULT_COOL_DOWN);
+                }
+                return answer;
             } else {
                 return {};
             }
@@ -137,7 +148,15 @@ public:
         const auto it = players.find(i);
         if (it != players.end()) {
             player &pl = it->second;
-            labyrinth::common::state &s = parties[it->second.get_party_index()].get_state();
+            party &p = parties[pl.get_party_index()];
+            labyrinth::common::state &s = p.get_state();
+            if (s.win() && p.get_win_cool_down() > 0) {
+                p.set_win_cool_down(p.get_win_cool_down() - 1);
+            }
+            if (p.get_win_cool_down() == 0) {
+                s = labyrinth::common::get_level(s.level + 1);
+                p.set_win_cool_down(DEFAULT_COOL_DOWN);
+            }
             return write(s, pl.get_perspective());
         } else {
             return {};
