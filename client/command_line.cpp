@@ -7,6 +7,7 @@ namespace labyrinth { namespace client {
 
 namespace {
 
+const char NO_MUSIC[] = "--no-music";
 const char DEBUG[] = "--debug";
 const char SERVER[] = "--server=";
 const char USERNAME[] = "--username=";
@@ -18,13 +19,17 @@ const char DEFAULT_USERNAME[] = "unknown";
 }
 
 command_line::command_line(int argc, char *argv[])
-  : hostname(DEFAULT_HOSTNAME),
+  : no_music(false),
+    debug(false),
+    hostname(DEFAULT_HOSTNAME),
     port(DEFAULT_PORT),
     username(DEFAULT_USERNAME)
 {
     for (int i = 1; i < argc; ++i) {
         if (strcmp(argv[i], DEBUG) == 0) {
             debug = true;
+        } else if (strcmp(argv[i], NO_MUSIC) == 0) {
+            no_music = true;
         } else if (strncmp(argv[i], USERNAME, sizeof(USERNAME) - 1) == 0) {
             username.assign(argv[i] + sizeof(USERNAME) - 1);
         } else if (strncmp(argv[i], SERVER, sizeof(SERVER) - 1) == 0) {

@@ -1,6 +1,7 @@
 #include <initializer.hpp>
 
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_mixer.h>
 #include <SDL2/SDL_net.h>
 
 #include <stdexcept>
@@ -12,6 +13,9 @@ initializer::initializer(unsigned int subsystems) {
     if ((subsystems & VIDEO) != 0) {
         flags |= SDL_INIT_VIDEO;
     }
+    if ((subsystems & MUSIC) != 0) {
+        flags |= SDL_INIT_AUDIO;
+    }
     if (SDL_Init(flags) < 0) {
         SDL_Log("Unable to initialize SDL2: %s", SDL_GetError());
         throw std::runtime_error("Error initializing SDL2");
@@ -20,6 +24,14 @@ initializer::initializer(unsigned int subsystems) {
         SDL_Quit();
         SDL_Log("Unable to initialize SDL2 networking: %s", SDLNet_GetError());
         throw std::runtime_error("Error initializing SDL2 networking");
+    }
+    if ((subsystems & MUSIC) != 0) {
+        const int result = Mix_Init(MIX_INIT_OGG);
+        if ((result & MIX_INIT_OGG) == 0) {
+            SDL_Quit();
+            SDL_Log("Unable to initialize SDL2 mixer: %s", Mix_GetError());
+            throw std::runtime_error("Error initializing SDL2 mixer");
+        }
     }
 }
 

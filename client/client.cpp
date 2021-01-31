@@ -1,6 +1,7 @@
 #include "bitmap.hpp"
 #include "game.hpp"
 #include "level.hpp"
+#include "music.hpp"
 #include "rectangle.hpp"
 #include "renderer.hpp"
 #include "surface.hpp"
@@ -10,13 +11,20 @@
 #include <state.hpp>
 #include <config.hpp>
 
+#include <memory>
+
 class labyrinth_game : public labyrinth::client::game {
 public:
     labyrinth_game(int argc, char *argv[])
       : game(argc, argv),
+        m(is_no_music() ? nullptr : new labyrinth::client::music(std::filesystem::path(ASSETS_DIRECTORY) / "labyrinth.ogg")),
         w("Labyrinth", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, SDL_WINDOW_SHOWN),
         lvl(w.get_renderer(), 0, s)
-    { }
+    {
+        if (m) {
+            m->play_music();
+        }
+    }
 
     void push_update() {
         handle_event(labyrinth::client::push_update(write(s, lvl.get_perspective())));
@@ -67,6 +75,7 @@ public:
         r.present();
     }
 private:
+    std::unique_ptr<labyrinth::client::music> m;
     labyrinth::client::window w;
     labyrinth::common::state s;
     labyrinth::client::level lvl;

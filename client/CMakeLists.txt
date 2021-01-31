@@ -7,6 +7,7 @@ add_executable(client
     game.cpp
     game_object.cpp
     level.cpp
+    music.cpp
     surface.cpp
     texture.cpp
     window.cpp)
@@ -15,3 +16,4 @@ target_link_libraries(client PRIVATE common)
 target_link_libraries(client PRIVATE PkgConfig::SDL2)
 target_link_libraries(client PRIVATE PkgConfig::SDL2_net)
 target_link_libraries(client PRIVATE PkgConfig::SDL2_image)
+target_link_libraries(client PRIVATE PkgConfig::SDL2_mixer)

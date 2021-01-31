@@ -27,7 +27,7 @@ TCPsocket open_socket(const std::string &hostname, uint16_t port) {
 
 game::game(int argc, char *argv[])
   : parser(argc, argv),
-    init(common::initializer::VIDEO | common::initializer::NETWORKING),
+    init(common::initializer::VIDEO | common::initializer::NETWORKING | common::initializer::MUSIC),
     socket(open_socket(parser.get_hostname(), parser.get_port())),
     quit(false)
 {
