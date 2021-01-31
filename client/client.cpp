@@ -50,25 +50,24 @@ public:
             const labyrinth::client::key &k = static_cast<const labyrinth::client::key &>(e);
             switch (k.get_code()) {
             case labyrinth::client::key::code::UP:
-                if (lvl.move_up()) {
-                    push_update();
-                }
+                try_push_movement(labyrinth::common::movement::UP);
                 return labyrinth::client::event::handling_result::ABORT;
             case labyrinth::client::key::code::DOWN:
-                if (lvl.move_down()) {
-                    push_update();
-                }
+                try_push_movement(labyrinth::common::movement::DOWN);
                 return labyrinth::client::event::handling_result::ABORT;
             case labyrinth::client::key::code::LEFT:
-                if (lvl.move_left()) {
-                    push_update();
+                if (lvl.get_perspective() == 0) {
+                    try_push_movement(labyrinth::common::movement::LEFT);
+                } else {
+                    try_push_movement(labyrinth::common::movement::BACK);
                 }
                 return labyrinth::client::event::handling_result::ABORT;
             case labyrinth::client::key::code::RIGHT:
-                if (lvl.move_right()) {
-                    push_update();
+                if (lvl.get_perspective() == 0) {
+                    try_push_movement(labyrinth::common::movement::RIGHT);
+                } else {
+                    try_push_movement(labyrinth::common::movement::FORTH);
                 }
-                push_update();
                 return labyrinth::client::event::handling_result::ABORT;
             }
         }
