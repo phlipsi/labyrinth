@@ -81,57 +81,6 @@ void level::draw(game &g, const renderer &r) const {
            false);
 }
 
-
-bool level::move_left() {
-    unsigned int tile = s.tiles[s.x + s.width * s.y + s.width * s.height * s.z];
-    if (perspective == 0) {
-        if (!common::tile_has_left_wall(tile)) {
-            --s.x;
-            return true;
-        }
-    } else {
-        if (!common::tile_has_front_wall(tile)) {
-            --s.z;
-            return true;
-        }
-    }
-    return false;
-}
-
-bool level::move_right() {
-    unsigned int tile = s.tiles[s.x + s.width * s.y + s.width * s.height * s.z];
-    if (perspective == 0) {
-        if (!common::tile_has_right_wall(tile)) {
-            ++s.x;
-            return true;
-        }
-    } else {
-        if (!common::tile_has_back_wall(tile)) {
-            ++s.z;
-            return true;
-        }
-    }
-    return false;
-}
-
-bool level::move_up() {
-    unsigned int tile = s.tiles[s.x + s.width * s.y + s.width * s.height * s.z];
-    if (!common::tile_has_top_wall(tile)) {
-        --s.y;
-        return true;
-    }
-    return false;
-}
-
-bool level::move_down() {
-    unsigned int tile = s.tiles[s.x + s.width * s.y + s.width * s.height * s.z];
-    if (!common::tile_has_bottom_wall(tile)) {
-        ++s.y;
-        return true;
-    }
-    return false;
-}
-
 void level::update(game &g, uint32_t elapsed_ticks) {
     time += elapsed_ticks;
     if (time > 1200) {
