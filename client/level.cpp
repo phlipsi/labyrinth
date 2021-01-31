@@ -62,14 +62,15 @@ void level::draw(game &g, const renderer &r) const {
     const int goal_u = perspective == 0 ? next.goal_x : next.goal_z;
     const int goal_v = current.goal_y;
     const int goal_w = perspective == 0 ? next.goal_z : next.goal_x;
-    const int bat_index = time / 300;
-    const bool flip = perspective == 1;
-    r.copy(bat, rectangle{ bat_index * 128, 0, 128, 128 },
-        rectangle{ static_cast<int>(you_u * 256 + 64), static_cast<int>(you_v * 256 + 64), 128, 128 },
-        0.0, point<int>{ 0, 0 }, flip);
     if (goal_w == w) {
         r.copy(bat, rectangle{ 512, 0, 128, 128 }, rectangle{ goal_u * 256, goal_v * 256, 256, 256 }, 0.0, point<int>{ 0, 0 }, false);
     }
+    const int bat_index = time / 300;
+    const bool flip = perspective == 1;
+    const float scale = 100 * (perspective == 0 ? player_z - current.z : player_x - current.x);
+    r.copy(bat, rectangle{ bat_index * 128, 0, 128, 128 },
+        rectangle{ static_cast<int>(you_u * 256 + 64 - scale / 2), static_cast<int>(you_v * 256 + 64 - scale / 2), static_cast<int>(128 + scale), static_cast<int>(128 + scale)},
+        0.0, point<int>{ 0, 0 }, flip);
     r.copy(light, rectangle{ 0, 0, 80, 60 },
            rectangle{ static_cast<int>(128 + you_u * 256 - 800), static_cast<int>(128 + you_v * 256 - 600), 1600, 1200 },
            0.0, point<int>{ 0, 0 }, false);
