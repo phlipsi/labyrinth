@@ -21,7 +21,7 @@ public:
       : game(argc, argv),
         m(is_no_music() ? nullptr : new labyrinth::client::music(std::filesystem::path(ASSETS_DIRECTORY) / "labyrinth.ogg")),
         w("Labyrinth", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, SDL_WINDOW_SHOWN),
-        lvl(w.get_renderer(), 0, s)
+        lvl(w.get_renderer())
     {
         if (m) {
             m->play_music();
@@ -72,8 +72,8 @@ public:
 
     virtual void set_state(const std::vector<char> &payload) override {
         const auto r = labyrinth::common::read(payload);
-        s = r.first;
         lvl.set_perspective(r.second);
+        lvl.move_to_state(r.first);
     }
 
     virtual void update(uint32_t elapsed_ticks) override {
@@ -87,7 +87,6 @@ public:
 private:
     std::unique_ptr<labyrinth::client::music> m;
     labyrinth::client::window w;
-    labyrinth::common::state s;
     labyrinth::client::level lvl;
 };
 

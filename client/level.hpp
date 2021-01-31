@@ -13,7 +13,7 @@ namespace labyrinth::client {
 
 class level : game_object {
 public:
-    explicit level(const renderer &r, int perspective, common::state &s);
+    explicit level(const renderer &r);
 
     virtual void draw(game &g, const renderer &r) const override;
     virtual void update(game &g, uint32_t elapsed_ticks) override;
@@ -28,10 +28,12 @@ public:
     void set_perspective(int perspective) { this->perspective = perspective; }
     int get_perspective() const { return perspective; }
 
+    void move_to_state(common::state new_state);
+
 private:
     font small;
     font large;
-    common::state *s;
+    common::state s;
     int perspective;
     texture walls;
     texture bat;

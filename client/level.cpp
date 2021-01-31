@@ -23,11 +23,10 @@ unsigned int tile_index(unsigned int tile, int perspective) {
 
 }
 
-level::level(const renderer &r, int perspective, common::state &s)
+level::level(const renderer &r)
   : small(ASSETS_DIRECTORY "/Avara.ttf", 32),
     large(ASSETS_DIRECTORY "/Avara.ttf", 64),
-    s(&s),
-    perspective(perspective),
+    perspective(0),
     walls(r.create_texture_from_surface(load_image(ASSETS_DIRECTORY "/walls.png"))),
     bat(r.create_texture_from_surface(load_image(ASSETS_DIRECTORY "/bat.png"))),
     light(r.create_texture_from_surface(load_image(ASSETS_DIRECTORY "/light.png"))),
@@ -37,14 +36,14 @@ level::level(const renderer &r, int perspective, common::state &s)
 { }
 
 void level::draw(game &g, const renderer &r) const {
-    const int width = perspective == 0 ? s->width : s->depth;
-    const int height = s->height;
-    const int du = perspective == 0 ? 1 : s->width * s->height;
-    const int dv = s->width;
-    const int dw = perspective == 0 ? s->width * s->height : 1;
-    const int w = perspective == 0 ? s->z : s->x;
-    const int you_u = perspective == 0 ? s->x : s->z;
-    const int you_v = s->y;
+    const int width = perspective == 0 ? s.width : s.depth;
+    const int height = s.height;
+    const int du = perspective == 0 ? 1 : s.width * s.height;
+    const int dv = s.width;
+    const int dw = perspective == 0 ? s.width * s.height : 1;
+    const int w = perspective == 0 ? s.z : s.x;
+    const int you_u = perspective == 0 ? s.x : s.z;
+    const int you_v = s.y;
 
     for (int u = 0; u < 7; ++u) {
         for (int v = 0; v < 5; ++v) {
@@ -54,13 +53,13 @@ void level::draw(game &g, const renderer &r) const {
     for (int u = 0; u < width; ++u) {
         for (int v = 0; v < height; ++v) {
             const int pos = u * du + v * dv + w * dw;
-            const int unsigned tile = tile_index(s->tiles[pos], perspective);
+            const int unsigned tile = tile_index(s.tiles[pos], perspective);
             r.copy(walls, rectangle{ static_cast<int>(tile) * 128, 0, 128, 128 }, rectangle{ u * 256, v * 256, 256, 256 }, 0.0, point<int>{ 0, 0 }, false);
         }
     }
-    const int goal_u = perspective == 0 ? s->goal_x : s->goal_z;
-    const int goal_v = s->goal_y;
-    const int goal_w = perspective == 0 ? s->goal_z : s->goal_x;
+    const int goal_u = perspective == 0 ? s.goal_x : s.goal_z;
+    const int goal_v = s.goal_y;
+    const int goal_w = perspective == 0 ? s.goal_z : s.goal_x;
     const int bat_index = time / 300;
     if (perspective == 0) {
         r.copy(bat, rectangle{ bat_index * 128, 0, 128, 128 }, rectangle{ you_u * 256 + 64, you_v * 256 + 64, 128, 128 }, 0.0, point<int>{ 0, 0 }, false);
@@ -70,22 +69,29 @@ void level::draw(game &g, const renderer &r) const {
     if (goal_w == w) {
         r.copy(bat, rectangle{ 512, 0, 128, 128 }, rectangle{ goal_u * 256, goal_v * 256, 256, 256 }, 0.0, point<int>{ 0, 0 }, false);
     }
-    r.copy(light, rectangle{ 0, 0, 80, 60 }, rectangle { 128 + you_u * 256 - 800, 128 + you_v * 256 - 600, 1600, 1200 }, 0.0, point<int>{ 0, 0 }, false);
-    r.copy(waiting, rectangle{ 0, 0, waiting.get_width(), waiting.get_height() }, rectangle{ (800 - waiting.get_width()) / 2, (600 - waiting.get_height()) / 2, waiting.get_width(), waiting.get_height() }, 0.0, point<int>{ 0, 0 }, false);
-    r.copy(lvl, rectangle{ 0, 0, lvl.get_width(), lvl.get_height() }, rectangle{ 10, 600 - lvl.get_height() - 10, lvl.get_width(), lvl.get_height() }, 0.0, point<int>{ 0, 0 }, false);
+    r.copy(light, rectangle{ 0, 0, 80, 60 }, rectangle{ 128 + you_u * 256 - 800, 128 + you_v * 256 - 600, 1600, 1200 }, 0.0, point<int>{ 0, 0 }, false);
+    r.copy(waiting, rectangle{ 0, 0, static_cast<int>(waiting.get_width()), static_cast<int>(waiting.get_height()) },
+           rectangle{ static_cast<int>(800 - waiting.get_width()) / 2, static_cast<int>(600 - waiting.get_height()) / 2, static_cast<int>(waiting.get_width()), static_cast<int>(waiting.get_height()) },
+           0.0,
+           point<int>{ 0, 0 },
+           false);
+    r.copy(lvl, rectangle{ 0, 0, static_cast<int>(lvl.get_width()), static_cast<int>(lvl.get_height()) }, rectangle{ 10, static_cast<int>(600 - lvl.get_height()) - 10, static_cast<int>(lvl.get_width()), static_cast<int>(lvl.get_height()) },
+           0.0,
+           point<int>{ 0, 0 },
+           false);
 }
 
 
 bool level::move_left() {
-    unsigned int tile = s->tiles[s->x + s->width * s->y + s->width * s->height * s->z];
+    unsigned int tile = s.tiles[s.x + s.width * s.y + s.width * s.height * s.z];
     if (perspective == 0) {
         if (!common::tile_has_left_wall(tile)) {
-            --s->x;
+            --s.x;
             return true;
         }
     } else {
         if (!common::tile_has_front_wall(tile)) {
-            --s->z;
+            --s.z;
             return true;
         }
     }
@@ -93,15 +99,15 @@ bool level::move_left() {
 }
 
 bool level::move_right() {
-    unsigned int tile = s->tiles[s->x + s->width * s->y + s->width * s->height * s->z];
+    unsigned int tile = s.tiles[s.x + s.width * s.y + s.width * s.height * s.z];
     if (perspective == 0) {
         if (!common::tile_has_right_wall(tile)) {
-            ++s->x;
+            ++s.x;
             return true;
         }
     } else {
         if (!common::tile_has_back_wall(tile)) {
-            ++s->z;
+            ++s.z;
             return true;
         }
     }
@@ -109,18 +115,18 @@ bool level::move_right() {
 }
 
 bool level::move_up() {
-    unsigned int tile = s->tiles[s->x + s->width * s->y + s->width * s->height * s->z];
+    unsigned int tile = s.tiles[s.x + s.width * s.y + s.width * s.height * s.z];
     if (!common::tile_has_top_wall(tile)) {
-        --s->y;
+        --s.y;
         return true;
     }
     return false;
 }
 
 bool level::move_down() {
-    unsigned int tile = s->tiles[s->x + s->width * s->y + s->width * s->height * s->z];
+    unsigned int tile = s.tiles[s.x + s.width * s.y + s.width * s.height * s.z];
     if (!common::tile_has_bottom_wall(tile)) {
-        ++s->y;
+        ++s.y;
         return true;
     }
     return false;
@@ -132,6 +138,10 @@ void level::update(game &g, uint32_t elapsed_ticks) {
         time = 0;
     }
     SDL_SetTextureAlphaMod(waiting.get_handle(), static_cast<int8_t>(256.0 * (sin(M_PI * time / 1200.0) + 1.0)));
+}
+
+void level::move_to_state(common::state new_state) {
+    s = new_state;
 }
 
 bool level::check_collisions(game &g, const game_object &other) const {
