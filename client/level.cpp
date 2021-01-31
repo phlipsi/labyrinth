@@ -35,6 +35,7 @@ level::level(const renderer &r)
     found_texture_decay(0.0),
     found_texture(large.render(r, "Found!", 0x96, 0x96, 0x96, 0xff)),
     title_texture(small.render(r, current.title, 0x96, 0x96, 0x96, 0x66)),
+    won_texture(large.render(r, "Congratulations!", 0x96, 0x96, 0x96, 0xff)),
     time(0)
 { }
 
@@ -94,6 +95,11 @@ void level::draw(game &g, const renderer &r) const {
            0.0,
            point<int>{ 0, 0 },
            false);
+    if (found_texture_decay < 0.01 && current.level == common::MAX_LEVELS) {
+        r.copy(won_texture, rectangle{ 0, 0, static_cast<int>(won_texture.get_width()), static_cast<int>(won_texture.get_height()) },
+               rectangle{ static_cast<int>(800 - won_texture.get_width()) / 2, static_cast<int>(600 - won_texture.get_height()) / 2, static_cast<int>(won_texture.get_width()), static_cast<int>(won_texture.get_height()) },
+               0.0, point<int>{ 0, 0 }, false);
+    }
 }
 
 void level::update(game &g, const renderer &r, uint32_t elapsed_ticks) {

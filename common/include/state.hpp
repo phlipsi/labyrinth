@@ -9,6 +9,8 @@
 
 namespace labyrinth { namespace common {
 
+const int MAX_LEVELS = 3;
+
 struct state {
     state();
     state(std::string title,

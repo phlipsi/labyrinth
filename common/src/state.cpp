@@ -186,7 +186,7 @@ state get_level(int level) {
                      0, 0, 0,
                      0, 1, 0);
     } else {
-        throw std::runtime_error("Invalid level");
+        return state("finally breakfast!", MAX_LEVELS, 1, 1, 1, { 0b111111 }, 0, 0, 0, 0, 0, 0);
     }
 }
 

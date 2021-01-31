@@ -153,7 +153,7 @@ public:
             if (s.win() && p.get_win_cool_down() > 0) {
                 p.set_win_cool_down(p.get_win_cool_down() - 1);
             }
-            if (p.get_win_cool_down() == 0) {
+            if (p.get_win_cool_down() == 0 && s.level < labyrinth::common::MAX_LEVELS) {
                 s = labyrinth::common::get_level(s.level + 1);
                 p.set_win_cool_down(DEFAULT_COOL_DOWN);
             }
