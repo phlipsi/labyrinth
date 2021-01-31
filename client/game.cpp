@@ -63,18 +63,7 @@ event::handling_result game::handle_event(const event &e) {
     switch (e.get_type()) {
     case event::type::QUIT:
         quit = true;
-        return event::handling_result::CONTINUE;
-    case event::type::PUSH_UPDATE: {
-        const push_update &p = static_cast<const push_update &>(e);
-        const common::message answer = send_to_server(common::message(common::message::type::PUSH_UPDATE, p.get_payload()));
-        if (answer.get_type() == common::message::type::GET_STATE) {
-            const std::vector<char> &payload = answer.get_payload();
-            if (!payload.empty()) {
-                set_state(payload);
-            }
-        }
-        return event::handling_result::ABORT;
-    }
+        break;
     }
     return event::handling_result::CONTINUE;
 }

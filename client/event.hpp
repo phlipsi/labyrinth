@@ -51,19 +51,6 @@ private:
     code c;
 };
 
-class push_update : public event {
-public:
-    explicit push_update(std::vector<char> payload)
-      : event(type::PUSH_UPDATE),
-        payload(std::move(payload))
-    { }
-
-    const std::vector<char> get_payload() const { return payload; }
-
-private:
-    std::vector<char> payload;
-};
-
 class collision : public event {
 public:
     collision(game_object &a, game_object &b)

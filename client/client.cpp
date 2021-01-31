@@ -28,10 +28,6 @@ public:
         }
     }
 
-    void push_update() {
-        handle_event(labyrinth::client::push_update(write(s, lvl.get_perspective())));
-    }
-
     bool try_push_movement(labyrinth::common::movement m) {
         labyrinth::common::message msg(labyrinth::common::message::type::TRY_PUSH_MOVEMENT, write_movement(m));
         const labyrinth::common::message answer = send_to_server(msg);
