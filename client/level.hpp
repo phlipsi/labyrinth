@@ -1,5 +1,6 @@
 #pragma once
 
+#include "font.hpp"
 #include "game_object.hpp"
 #include "texture.hpp"
 
@@ -28,11 +29,15 @@ public:
     int get_perspective() const { return perspective; }
 
 private:
+    font small;
+    font large;
     common::state *s;
     int perspective;
     texture walls;
     texture bat;
     texture light;
+    texture waiting;
+    texture lvl;
     uint32_t time;
 };
 

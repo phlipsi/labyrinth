@@ -4,6 +4,7 @@ add_executable(server
 target_link_libraries(server PRIVATE common)
 target_link_libraries(server PRIVATE PkgConfig::SDL2_net)
 target_link_libraries(server PRIVATE PkgConfig::SDL2_mixer)
+target_link_libraries(server PRIVATE PkgConfig::SDL2_ttf)
 
 add_executable(test_client test_client.cpp)
 target_link_libraries(test_client PRIVATE PkgConfig::SDL2_net)

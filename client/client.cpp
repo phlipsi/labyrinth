@@ -1,4 +1,5 @@
 #include "bitmap.hpp"
+#include "font.hpp"
 #include "game.hpp"
 #include "level.hpp"
 #include "music.hpp"

@@ -8,6 +8,7 @@ class texture {
 public:
     texture();
     explicit texture(SDL_Texture *handle);
+    explicit texture(SDL_Texture *handle, unsigned int width, unsigned int height);
     ~texture();
 
     texture(const texture &) = delete;
@@ -20,8 +21,13 @@ public:
 
     SDL_Texture *get_handle() const;
 
+    unsigned int get_width() const { return width; }
+    unsigned int get_height() const { return height; }
+
 private:
     SDL_Texture *handle;
+    unsigned int width;
+    unsigned int height;
 };
 
 } }

@@ -3,6 +3,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_mixer.h>
 #include <SDL2/SDL_net.h>
+#include <SDL2/SDL_ttf.h>
 
 #include <stdexcept>
 
@@ -29,13 +30,24 @@ initializer::initializer(unsigned int subsystems) {
         const int result = Mix_Init(MIX_INIT_OGG);
         if ((result & MIX_INIT_OGG) == 0) {
             SDL_Quit();
+            SDLNet_Quit();
             SDL_Log("Unable to initialize SDL2 mixer: %s", Mix_GetError());
             throw std::runtime_error("Error initializing SDL2 mixer");
+        }
+    }
+    if ((subsystems & FONT) != 0) {
+        if (TTF_Init() != 0) {
+            Mix_Quit();
+            SDLNet_Quit();
+            SDL_Quit();
+            SDL_Log("Unable to initialize SDL2 font engine: %s", TTF_GetError());
+            throw std::runtime_error("Error initializing SDL2 font engine");
         }
     }
 }
 
 initializer::~initializer() {
+    Mix_Quit();
     SDLNet_Quit();
     SDL_Quit();
 }

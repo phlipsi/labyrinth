@@ -8,6 +8,7 @@ pkg_check_modules(SDL2 REQUIRED IMPORTED_TARGET sdl2)
 pkg_check_modules(SDL2_image REQUIRED IMPORTED_TARGET SDL2_image)
 pkg_check_modules(SDL2_net REQUIRED IMPORTED_TARGET SDL2_net)
 pkg_check_modules(SDL2_mixer REQUIRED IMPORTED_TARGET SDL2_mixer)
+pkg_check_modules(SDL2_ttf REQUIRED IMPORTED_TARGET SDL2_ttf)
 
 set(ASSETS_DIRECTORY "${CMAKE_SOURCE_DIR}/assets" CACHE PATH "Directory for game assets")
 

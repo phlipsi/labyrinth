@@ -52,7 +52,7 @@ sdl_renderer::~sdl_renderer() {
 texture sdl_renderer::create_texture_from_surface(const surface &s) const {
     SDL_Texture *const t = SDL_CreateTextureFromSurface(handle, s.get_handle());
     if (t != nullptr) {
-        return texture(t);
+        return texture(t, s.get_width(), s.get_height());
     } else {
         throw std::runtime_error("Can't create texture from surface");
     }

@@ -24,11 +24,15 @@ unsigned int tile_index(unsigned int tile, int perspective) {
 }
 
 level::level(const renderer &r, int perspective, common::state &s)
-  : s(&s),
+  : small(ASSETS_DIRECTORY "/Avara.ttf", 32),
+    large(ASSETS_DIRECTORY "/Avara.ttf", 64),
+    s(&s),
     perspective(perspective),
     walls(r.create_texture_from_surface(load_image(ASSETS_DIRECTORY "/walls.png"))),
     bat(r.create_texture_from_surface(load_image(ASSETS_DIRECTORY "/bat.png"))),
     light(r.create_texture_from_surface(load_image(ASSETS_DIRECTORY "/light.png"))),
+    waiting(small.render(r, "Waiting for other player...", 0x96, 0x66, 0x66, 0x66)),
+    lvl(small.render(r, "Level 1", 0x96, 0x96, 0x96, 0x66)),
     time(0)
 { }
 
@@ -67,6 +71,8 @@ void level::draw(game &g, const renderer &r) const {
         r.copy(bat, rectangle{ 512, 0, 128, 128 }, rectangle{ goal_u * 256, goal_v * 256, 256, 256 }, 0.0, point<int>{ 0, 0 }, false);
     }
     r.copy(light, rectangle{ 0, 0, 80, 60 }, rectangle { 128 + you_u * 256 - 800, 128 + you_v * 256 - 600, 1600, 1200 }, 0.0, point<int>{ 0, 0 }, false);
+    r.copy(waiting, rectangle{ 0, 0, waiting.get_width(), waiting.get_height() }, rectangle{ (800 - waiting.get_width()) / 2, (600 - waiting.get_height()) / 2, waiting.get_width(), waiting.get_height() }, 0.0, point<int>{ 0, 0 }, false);
+    r.copy(lvl, rectangle{ 0, 0, lvl.get_width(), lvl.get_height() }, rectangle{ 10, 600 - lvl.get_height() - 10, lvl.get_width(), lvl.get_height() }, 0.0, point<int>{ 0, 0 }, false);
 }
 
 
@@ -125,6 +131,7 @@ void level::update(game &g, uint32_t elapsed_ticks) {
     if (time > 1200) {
         time = 0;
     }
+    SDL_SetTextureAlphaMod(waiting.get_handle(), static_cast<int8_t>(256.0 * (sin(M_PI * time / 1200.0) + 1.0)));
 }
 
 bool level::check_collisions(game &g, const game_object &other) const {

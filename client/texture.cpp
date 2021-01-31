@@ -4,7 +4,12 @@ namespace labyrinth { namespace client {
 
 texture::texture() : handle(nullptr) { }
 
-texture::texture(SDL_Texture *handle) : handle(handle) { }
+texture::texture(SDL_Texture *handle) : handle(handle), width(0), height(0) { }
+
+texture::texture(SDL_Texture *handle,
+                 unsigned int width,
+                 unsigned int height)
+  : handle(handle), width(width), height(height) { }
 
 texture::~texture() {
     if (handle != nullptr) {
