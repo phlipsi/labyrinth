@@ -147,6 +147,11 @@ bool tile_has_back_wall(unsigned int tile) {
     return (tile & 0b010000) != 0;
 }
 
+std::tuple<int, int, int> state::get_movement_diff(const state &other) const {
+    return { other.x - x, other.y - y, other.z - z };
+}
+
+
 // 076543210
 //    vhuolr
 

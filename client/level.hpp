@@ -28,7 +28,11 @@ public:
 private:
     font small;
     font large;
-    common::state s;
+    common::state current;
+    common::state next;
+    float player_x;
+    float player_y;
+    float player_z;
     int perspective;
     texture walls;
     texture bat;

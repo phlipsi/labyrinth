@@ -2,6 +2,7 @@
 
 #include <movement.hpp>
 
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -29,6 +30,8 @@ struct state {
     unsigned int get_tile(unsigned int x, unsigned int y, unsigned int z) const;
 
     bool try_movement(movement m);
+
+    std::tuple<int, int, int> get_movement_diff(const state &other) const;
 
     unsigned int level;
     unsigned int width;
