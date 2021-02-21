@@ -45,7 +45,11 @@ protected:
 
 private:
     command_line parser;
-    common::initializer init;
+    common::initializer<> sdl_init;
+    common::initializer<> sdl_net_init;
+    common::initializer<> sdl_image_init;
+    common::initializer<> sdl_ttf_init;
+    common::initializer<> sdl_mixer_init;
     TCPsocket socket;
     bool quit;
 

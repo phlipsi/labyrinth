@@ -169,7 +169,8 @@ private:
 };
 
 int main(int argc, char *argv[]) {
-    labyrinth::common::initializer init(0);
+    labyrinth::common::initializer<> sdl_init([]() { return SDL_Init(0) >= 0; }, SDL_Quit, SDL_GetError);
+    labyrinth::common::initializer<> sdl_net_init([]() { return SDLNet_Init() >= 0; }, SDLNet_Quit, SDLNet_GetError);
     labyrinth::server::server_base s(10000, 10);
     test_handler h;
     s.run(h, 1000);

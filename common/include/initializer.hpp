@@ -1,18 +1,25 @@
 #pragma once
 
-#include <cstdint>
+#include <string>
 
 namespace labyrinth { namespace common {
-    
+
+template<typename QuitFunc = void (*)()>
 class initializer {
 public:
-    static const unsigned int VIDEO      = 1 << 0;
-    static const unsigned int NETWORKING = 1 << 1;
-    static const unsigned int MUSIC      = 1 << 2;
-    static const unsigned int FONT       = 1 << 3;
-
-    explicit initializer(unsigned int subsystems);
-    ~initializer();
+    template<typename InitFunc, typename ErrorFunc>
+    initializer(InitFunc init, QuitFunc quit, ErrorFunc error)
+      : quit(quit)
+    {
+        if (!init()) {
+            throw std::runtime_error(std::string("Error initializing: ") + error());
+        }
+    }
+    ~initializer() {
+        quit();
+    }
+private:
+    QuitFunc quit;
 };
 
 } }

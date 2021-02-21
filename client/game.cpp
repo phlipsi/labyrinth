@@ -4,6 +4,9 @@
 
 #include <SDL_net.h>
 #include <SDL_timer.h>
+#include <SDL_image.h>
+#include <SDL_ttf.h>
+#include <SDL_mixer.h>
 
 namespace labyrinth { namespace client {
 
@@ -26,8 +29,12 @@ TCPsocket open_socket(const std::string &hostname, uint16_t port) {
 }
 
 game::game(int argc, char *argv[])
-  : parser(argc, argv),
-    init(common::initializer::VIDEO | common::initializer::NETWORKING | common::initializer::MUSIC | common::initializer::FONT),
+    : parser(argc, argv),
+    sdl_init([]() { return SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) >= 0; }, SDL_Quit, SDL_GetError),
+    sdl_net_init([]() { return SDLNet_Init() >= 0; }, SDLNet_Quit, SDLNet_GetError),
+    sdl_image_init([]() { return IMG_Init(IMG_INIT_PNG) == IMG_INIT_PNG; }, IMG_Quit, IMG_GetError),
+    sdl_ttf_init([]() { return TTF_Init() >= 0; }, TTF_Quit, SDL_GetError),
+    sdl_mixer_init([]() { return Mix_Init(MIX_INIT_OGG) == MIX_INIT_OGG; }, Mix_Quit, Mix_GetError),
     socket(open_socket(parser.get_hostname(), parser.get_port())),
     quit(false)
 {

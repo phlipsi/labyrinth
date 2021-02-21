@@ -3,8 +3,6 @@ add_executable(server
     server_base.cpp)
 target_link_libraries(server PRIVATE common)
 target_link_libraries(server PRIVATE PkgConfig::SDL2_net)
-target_link_libraries(server PRIVATE PkgConfig::SDL2_mixer)
-target_link_libraries(server PRIVATE PkgConfig::SDL2_ttf)
 if(WIN32)
     target_link_libraries(server PRIVATE PkgConfig::SDL2main)
 endif()
