@@ -20,12 +20,32 @@ else()
     set(SDL2_TTF_ROOT "${CMAKE_SOURCE_DIR}" CACHE PATH "Root directory to SDL2_ttf development packages")
     set(SDL2_MIXER_ROOT "${CMAKE_SOURCE_DIR}" CACHE PATH "Root directory to SDL2_mixer development packages")
 
-    add_sdl_library(SDL2 ${SDL2_ROOT} SDL2.dll)
+    add_sdl_library(SDL2 ${SDL2_ROOT}
+        SDL2.dll)
     add_sdl_library(SDL2main ${SDL2_ROOT})
-    add_sdl_library(SDL2_ttf ${SDL2_TTF_ROOT} libfreetype-6.dll SDL2_ttf.dll zlib1.dll)
-    add_sdl_library(SDL2_mixer ${SDL2_MIXER_ROOT} libogg-0.dll libvorbis-0.dll libvorbisfile-3.dll SDL2_mixer.dll)
-    add_sdl_library(SDL2_net ${SDL2_NET_ROOT} SDL2_net.dll)
-    add_sdl_library(SDL2_image ${SDL2_IMAGE_ROOT} libpng16-16.dll SDL2_image.dll)
+    add_sdl_library(SDL2_ttf ${SDL2_TTF_ROOT}
+        libfreetype-6.dll
+        SDL2_ttf.dll
+        zlib1.dll
+        LICENSE.freetype.txt
+        LICENSE.zlib.txt)
+    add_sdl_library(SDL2_mixer ${SDL2_MIXER_ROOT}
+        libogg-0.dll
+        libvorbis-0.dll
+        libvorbisfile-3.dll
+        SDL2_mixer.dll
+        LICENSE.ogg-vorbis.txt)
+    add_sdl_library(SDL2_net ${SDL2_NET_ROOT}
+        SDL2_net.dll)
+    add_sdl_library(SDL2_image ${SDL2_IMAGE_ROOT}
+        libpng16-16.dll
+        SDL2_image.dll
+        LICENSE.png.txt)
+    install(FILES "${SDL2_ROOT}/COPYING.txt" DESTINATION bin RENAME "COPYING.sdl2.txt")
+    install(FILES "${SDL2_TTF_ROOT}/COPYING.txt" DESTINATION bin RENAME "COPYING.sdl2_ttf.txt")
+    install(FILES "${SDL2_MIXER_ROOT}/COPYING.txt" DESTINATION bin RENAME "COPYING.sdl2_mixer.txt")
+    install(FILES "${SDL2_NET_ROOT}/COPYING.txt" DESTINATION bin RENAME "COPYING.sdl2_net.txt")
+    install(FILES "${SDL2_IMAGE_ROOT}/COPYING.txt" DESTINATION bin RENAME "COPYING.sdl2_image.txt")
 endif()
 
 set(ASSETS_DIRECTORY "${CMAKE_SOURCE_DIR}/assets" CACHE PATH "Directory for game assets")
@@ -33,3 +53,5 @@ set(ASSETS_DIRECTORY "${CMAKE_SOURCE_DIR}/assets" CACHE PATH "Directory for game
 add_subdirectory(common)
 add_subdirectory(server)
 add_subdirectory(client)
+
+install(FILES LICENSE DESTINATION bin)
