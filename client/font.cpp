@@ -9,7 +9,7 @@
 namespace labyrinth::client {
 
 font::font(std::filesystem::path f, unsigned int size)
-  : f(TTF_OpenFont(f.c_str(), size))
+  : f(TTF_OpenFont(f.u8string().c_str(), size))
 {
     if (this->f == nullptr) {
         throw std::runtime_error("Can't open font " + f.string() + ": " + TTF_GetError());

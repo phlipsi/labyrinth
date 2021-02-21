@@ -19,3 +19,8 @@ target_link_libraries(client PRIVATE PkgConfig::SDL2_net)
 target_link_libraries(client PRIVATE PkgConfig::SDL2_image)
 target_link_libraries(client PRIVATE PkgConfig::SDL2_mixer)
 target_link_libraries(client PRIVATE PkgConfig::SDL2_ttf)
+if(WIN32)
+    target_link_libraries(client PRIVATE PkgConfig::SDL2main)
+endif()
+
+install(TARGETS client RUNTIME DESTINATION bin)

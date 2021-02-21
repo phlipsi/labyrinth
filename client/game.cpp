@@ -2,8 +2,8 @@
 
 #include "game_object.hpp"
 
-#include <SDL2/SDL_net.h>
-#include <SDL2/SDL_timer.h>
+#include <SDL_net.h>
+#include <SDL_timer.h>
 
 namespace labyrinth { namespace client {
 

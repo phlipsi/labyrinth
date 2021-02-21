@@ -4,7 +4,7 @@
 
 #include <stdexcept>
 
-#include <SDL2/SDL_net.h>
+#include <SDL_net.h>
 
 namespace labyrinth { namespace common {
 

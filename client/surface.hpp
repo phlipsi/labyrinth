@@ -1,6 +1,6 @@
 #pragma once
 
-#include <SDL2/SDL_surface.h>
+#include <SDL_surface.h>
 
 namespace labyrinth { namespace client {
 

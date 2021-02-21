@@ -2,10 +2,10 @@
 #include <string>
 #include <vector>
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_net.h>
+#include <SDL.h>
+#include <SDL_net.h>
 
-int main() {
+int main(int argc, char *argv[]) {
     IPaddress address;
     TCPsocket server;
   int data;
@@ -49,4 +49,5 @@ int main() {
         std::cout << output << std::endl;
     } while (output.compare(0, 11, "CLIENT_QUIT") != 0);
     SDLNet_TCP_Close(server);
+    return 0;
 }

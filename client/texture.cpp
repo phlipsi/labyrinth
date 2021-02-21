@@ -1,5 +1,7 @@
 #include "texture.hpp"
 
+#include <algorithm>
+
 namespace labyrinth { namespace client {
 
 texture::texture() : handle(nullptr) { }

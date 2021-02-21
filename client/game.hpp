@@ -6,8 +6,8 @@
 #include <initializer.hpp>
 #include <message.hpp>
 
-#include <SDL2/SDL_events.h>
-#include <SDL2/SDL_net.h>
+#include <SDL_events.h>
+#include <SDL_net.h>
 
 #include <cstdint>
 #include <functional>

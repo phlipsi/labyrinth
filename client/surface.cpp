@@ -1,5 +1,7 @@
 #include "surface.hpp"
 
+#include <algorithm>
+
 namespace labyrinth { namespace client {
 
 surface::surface(SDL_Surface *handle) : handle(handle) { }
