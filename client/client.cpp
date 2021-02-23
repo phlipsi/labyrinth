@@ -1,3 +1,4 @@
+#include "assets.hpp"
 #include "bitmap.hpp"
 #include "font.hpp"
 #include "game.hpp"
@@ -19,9 +20,10 @@ class labyrinth_game : public labyrinth::client::game {
 public:
     labyrinth_game(int argc, char *argv[])
       : game(argc, argv),
-        m(is_no_music() ? nullptr : new labyrinth::client::music(std::filesystem::path(ASSETS_DIRECTORY) / "labyrinth.ogg")),
+        a(argv[0]),
+        m(is_no_music() ? nullptr : new labyrinth::client::music(a.get_asset_path("labyrinth.ogg"))),
         w("Labyrinth", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 800, SDL_WINDOW_SHOWN),
-        lvl(w.get_renderer())
+        lvl(a, w.get_renderer())
     {
         if (m) {
             m->play_music();
@@ -85,6 +87,7 @@ public:
         r.present();
     }
 private:
+    labyrinth::client::assets a;
     std::unique_ptr<labyrinth::client::music> m;
     labyrinth::client::window w;
     labyrinth::client::level lvl;

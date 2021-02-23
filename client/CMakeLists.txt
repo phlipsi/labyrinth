@@ -1,6 +1,7 @@
 configure_file(config.hpp.in config.hpp @ONLY)
 
 add_executable(client
+    assets.cpp
     bitmap.cpp
     client.cpp
     command_line.cpp

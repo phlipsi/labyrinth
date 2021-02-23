@@ -58,8 +58,9 @@ else()
     endif()
 endif()
 
-set(ASSETS_DIRECTORY "${CMAKE_SOURCE_DIR}/assets" CACHE PATH "Directory for game assets")
+set(ASSETS_DIRECTORY "../share/labyrinth/assets" CACHE PATH "Directory for game assets")
 
+add_subdirectory(assets)
 add_subdirectory(common)
 add_subdirectory(server)
 if(NOT ONLY_SERVER)

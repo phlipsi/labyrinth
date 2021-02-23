@@ -1,13 +1,12 @@
 #include "level.hpp"
 
+#include "assets.hpp"
 #include "texture.hpp"
 #include "bitmap.hpp"
 #include "point.hpp"
 #include "rectangle.hpp"
 #include "renderer.hpp"
 #include "surface.hpp"
-
-#include <config.hpp>
 
 namespace labyrinth::client {
 
@@ -27,14 +26,14 @@ unsigned int tile_index(unsigned int tile, int perspective) {
 
 }
 
-level::level(const renderer &r)
-  : small(ASSETS_DIRECTORY "/Avara.ttf", 32),
-    large(ASSETS_DIRECTORY "/Avara.ttf", 64),
+level::level(const assets &a, const renderer &r)
+  : small(a.get_asset_path("Avara.ttf"), 32),
+    large(a.get_asset_path("Avara.ttf"), 64),
     player_x(current.x), player_y(current.y), player_z(current.z),
     perspective(0),
-    walls(r.create_texture_from_surface(load_image(ASSETS_DIRECTORY "/walls.png"))),
-    bat(r.create_texture_from_surface(load_image(ASSETS_DIRECTORY "/bat.png"))),
-    light(r.create_texture_from_surface(load_image(ASSETS_DIRECTORY "/light.png"))),
+    walls(r.create_texture_from_surface(load_image(a.get_asset_path("walls.png")))),
+    bat(r.create_texture_from_surface(load_image(a.get_asset_path("bat.png")))),
+    light(r.create_texture_from_surface(load_image(a.get_asset_path("light.png")))),
     waiting(small.render(r, "Waiting for other player...", 0x96, 0x66, 0x66, 0x66)),
     found_texture_decay(0.0),
     found_texture(large.render(r, "Found!", 0x96, 0x96, 0x96, 0xff)),

@@ -11,9 +11,11 @@
 
 namespace labyrinth::client {
 
+class assets;
+
 class level {
 public:
-    explicit level(const renderer &r);
+    explicit level(const assets &a, const renderer &r);
 
     virtual void draw(game &g, const renderer &r) const;
     virtual void update(game &g, const renderer &r, uint32_t elapsed_ticks);
